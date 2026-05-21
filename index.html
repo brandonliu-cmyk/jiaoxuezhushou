@@ -1820,10 +1820,10 @@
         fullHTML += 'if(extra){';
         fullHTML += 'bodyHTML+="<h2 style=\'font-size:15px;color:#1B5EA7;margin:18px 0 8px;font-weight:700;border-left:3px solid #1B5EA7;padding-left:8px;\'>附：附加说明</h2><p>"+extra.replace(/\\n/g,"<br>")+"</p>";';
         fullHTML += '}';
-        fullHTML += 'var formParams=encodeURIComponent(JSON.stringify({subject:subject,grade:grade,textbook:textbook,overview:overview,resources:resources,extra:extra,structs:structs}));';
-        fullHTML += 'var resultData=encodeURIComponent(JSON.stringify({title:planTitle,content:bodyHTML}));';
-        fullHTML += 'var resultWin=window.open("plan-result.html?data="+resultData+"&formData="+formParams,"_blank");';
-        fullHTML += 'if(resultWin){resultWin.focus();}else{alert("请允许弹出窗口后重试");}';
+        fullHTML += 'sessionStorage.setItem("planResult",JSON.stringify({title:planTitle,content:bodyHTML}));';
+        fullHTML += 'sessionStorage.setItem("planFormData",JSON.stringify({subject:subject,grade:grade,textbook:textbook,overview:overview,resources:resources,extra:extra,structs:structs}));';
+        fullHTML += 'var resultWin=window.open("plan-result.html","_blank");';
+        fullHTML += 'if(!resultWin){alert("请允许弹出窗口后重试");}';
         fullHTML += '}catch(err){alert("生成失败："+err.message);}}';
         fullHTML += '<\/script></body></html>';
 
@@ -2484,6 +2484,16 @@
 
     // ====== 重新打开教学计划参数表单（从结果页返回）======
     window.reopenPlanForm = function(params) {
+      // 如果没有传入params，尝试从sessionStorage读取
+      if (!params) {
+        try {
+          var preData = sessionStorage.getItem('planFormPreData');
+          if (preData) {
+            params = JSON.parse(preData);
+            sessionStorage.removeItem('planFormPreData');
+          }
+        } catch(e) {}
+      }
       if (!params) return;
       // 设置表单值
       document.getElementById('f-subject').value = params.subject || '语文';
@@ -2503,6 +2513,19 @@
         formArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
     };
+    
+    // ====== 页面加载时检查预填数据 ======
+    (function() {
+      // 检查教学计划预填数据
+      var planPreData = sessionStorage.getItem('planFormPreData');
+      if (planPreData) {
+        sessionStorage.removeItem('planFormPreData');
+        try {
+          var params = JSON.parse(planPreData);
+          window.reopenPlanForm(params);
+        } catch(e) {}
+      }
+    })();
 
     // ====== 重新打开活动策划参数表单（从结果页返回）======
     window.reopenEventForm = function(params) {
