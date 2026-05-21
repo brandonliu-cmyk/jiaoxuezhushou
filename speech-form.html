@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>填写家长会发言稿参数 - 兆涵科技</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: "Microsoft YaHei","PingFang SC",sans-serif; background: #F0F4F8; color: #333; min-height: 100vh; }
+    
+    .back-btn { position: fixed; left: 20px; top: 16px; background: #fff; border: 1.5px solid #D8E2EE; color: #1B5EA7; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,.1); transition: all .2s; z-index: 100; }
+    .back-btn:hover { background: #1B5EA7; color: #fff; border-color: #1B5EA7; }
+    .back-btn svg { width: 18px; height: 18px; }
+    
+    .top-bar { background: #1B5EA7; color: #fff; padding: 0 40px; height: 56px; display: flex; align-items: center; gap: 10px; box-shadow: 0 2px 8px rgba(0,0,0,.15); position: sticky; top: 0; z-index: 10; }
+    .top-bar-title { font-size: 16px; font-weight: 600; }
+    .top-bar-badge { background: rgba(255,255,255,.2); font-size: 12px; padding: 3px 12px; border-radius: 20px; }
+    
+    .container { max-width: 860px; margin: 28px auto 60px; padding: 0 20px; }
+    .card { background: #fff; border-radius: 16px; border: 1px solid #E8EEF4; box-shadow: 0 2px 12px rgba(27,94,167,.06); padding: 32px 36px; }
+    .page-title { font-size: 20px; font-weight: 700; color: #1a1a2e; margin-bottom: 6px; }
+    .page-sub { font-size: 13px; color: #999; margin-bottom: 28px; }
+    
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+    .form-row.single { grid-template-columns: 1fr; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-label { font-size: 13px; font-weight: 600; color: #444; }
+    .form-label .hint { color: #999; font-weight: 400; font-size: 12px; }
+    .form-input,.form-select,.form-textarea { border: 1.5px solid #D8E2EE; border-radius: 10px; padding: 10px 14px; font-size: 14px; color: #333; outline: none; transition: border-color .2s,box-shadow .2s; font-family: inherit; background: #fff; width: 100%; }
+    .form-input:focus,.form-select:focus,.form-textarea:focus { border-color: #1B5EA7; box-shadow: 0 0 0 3px rgba(27,94,167,.1); }
+    .form-input::placeholder,.form-textarea::placeholder { color: #B0BDD0; }
+    .form-textarea { resize: vertical; min-height: 80px; line-height: 1.8; }
+    
+    .section-title { font-size: 14px; font-weight: 700; color: #1B5EA7; margin: 20px 0 10px; padding-bottom: 6px; border-bottom: 1.5px solid #D8E2EE; }
+    
+    .struct-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+    .struct-tag { background: #EEF4FF; border: 1.5px solid #C8DAF5; color: #1B5EA7; padding: 5px 14px; border-radius: 20px; font-size: 13px; cursor: pointer; transition: all .2s; user-select: none; }
+    .struct-tag:hover,.struct-tag.selected { background: #1B5EA7; color: #fff; border-color: #1B5EA7; }
+    .add-custom-btn { background: transparent; border: 1.5px dashed #C8DAF5; color: #888; padding: 5px 14px; border-radius: 20px; font-size: 13px; cursor: pointer; }
+    .add-custom-btn:hover { border-color: #1B5EA7; color: #1B5EA7; }
+    
+    .custom-module-input { display: none; align-items: center; gap: 8px; margin-top: 8px; }
+    .custom-module-input.show { display: flex; }
+    .custom-module-input input { flex: 1; border: 1.5px solid #D8E2EE; border-radius: 8px; padding: 6px 12px; font-size: 13px; outline: none; font-family: inherit; }
+    .custom-module-remove { color: #E53935; cursor: pointer; font-size: 16px; font-weight: bold; }
+    
+    .btn-submit { width: 100%; background: linear-gradient(135deg,#1B5EA7,#0D47A1); color: #fff; border: none; padding: 13px; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 16px rgba(27,94,167,.35); transition: all .2s; letter-spacing: 2px; margin-top: 24px; }
+    .btn-submit:hover { box-shadow: 0 6px 22px rgba(27,94,167,.5); transform: translateY(-1px); }
+    
+    .generating-overlay { display: none; position: fixed; inset: 0; background: rgba(255,255,255,.88); z-index: 999; align-items: center; justify-content: center; flex-direction: column; gap: 16px; }
+    .generating-overlay.show { display: flex; }
+    .spinner { width: 44px; height: 44px; border: 4px solid #D8E2EE; border-top-color: #1B5EA7; border-radius: 50%; animation: spin .8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .generating-text { font-size: 15px; color: #555; font-weight: 500; }
+  </style>
+</head>
+<body>
+  <button class="back-btn" onclick="goBack()" title="返回首页">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M15 18l-6-6 6-6"/>
+    </svg>
+  </button>
+  
+  <div class="top-bar">
+    <span class="top-bar-title">🎤 填写家长会发言稿参数</span>
+    <span class="top-bar-badge">AI 已解析 · 可手动调整</span>
+  </div>
+  
+  <div class="container">
+    <div class="card">
+      <div class="page-title">家长会发言稿 · 参数确认</div>
+      <div class="page-sub">请确认以下 AI 解析的参数，如有需要可直接修改，确认后生成完整家长会发言稿</div>
+      
+      <!-- 年级学期 -->
+      <div class="section-title">📌 基本信息</div>
+      <div class="form-row single">
+        <div class="form-group">
+          <label class="form-label">年级学期</label>
+          <select class="form-select" id="f-grade">
+            <option value="一年级上学期">一年级上学期</option>
+            <option value="一年级下学期">一年级下学期</option>
+            <option value="二年级上学期">二年级上学期</option>
+            <option value="二年级下学期">二年级下学期</option>
+            <option value="三年级上学期" selected>三年级上学期</option>
+            <option value="三年级下学期">三年级下学期</option>
+            <option value="四年级上学期">四年级上学期</option>
+            <option value="四年级下学期">四年级下学期</option>
+            <option value="五年级上学期">五年级上学期</option>
+            <option value="五年级下学期">五年级下学期</option>
+            <option value="六年级上学期">六年级上学期</option>
+            <option value="六年级下学期">六年级下学期</option>
+            <option value="七年级上学期">七年级上学期</option>
+            <option value="七年级下学期">七年级下学期</option>
+            <option value="八年级上学期">八年级上学期</option>
+            <option value="八年级下学期">八年级下学期</option>
+            <option value="九年级上学期">九年级上学期</option>
+            <option value="九年级下学期">九年级下学期</option>
+            <option value="高一上学期">高一上学期</option>
+            <option value="高一下学期">高一下学期</option>
+            <option value="高二上学期">高二上学期</option>
+            <option value="高二下学期">高二下学期</option>
+            <option value="高三上学期">高三上学期</option>
+            <option value="高三下学期">高三下学期</option>
+          </select>
+        </div>
+      </div>
+      
+      <!-- 班主任姓名 -->
+      <div class="form-row single">
+        <div class="form-group">
+          <label class="form-label">职务角色 <span class="hint">除家长外的会议主要参与人，如：三年级二班班主任 张老师</span></label>
+          <input class="form-input" id="f-teacher" placeholder="除家长外的会议主要参与人，如：三年级二班班主任 王老师">
+        </div>
+      </div>
+      
+      <!-- 会议主题 -->
+      <div class="section-title">📝 会议主题</div>
+      <div class="form-row single">
+        <div class="form-group">
+          <label class="form-label">会议主题 <span class="hint">本次家长会聚焦的主题</span></label>
+          <textarea class="form-textarea" id="f-theme" placeholder="请输入本次家长会聚焦的主题，例如："聚焦学习方法，备战中考""></textarea>
+        </div>
+      </div>
+      
+      <!-- 核心目的 -->
+      <div class="section-title">🎯 核心目的</div>
+      <div class="form-row single">
+        <div class="form-group">
+          <label class="form-label">核心目的 <span class="hint">最想和家长沟通的具体事项</span></label>
+          <textarea class="form-textarea" id="f-purpose" placeholder="简要说明最想和家长沟通的具体事项，例如："期中考试情况分析与后续学习策略""></textarea>
+        </div>
+      </div>
+      
+      <!-- 班级情况 -->
+      <div class="section-title">🏫 班级情况</div>
+      <div class="form-row single">
+        <div class="form-group">
+          <label class="form-label">班级情况</label>
+          <textarea class="form-textarea" id="f-classinfo" placeholder="简要介绍会议涉及的班级基本情况，如班级人数、学习氛围、学生特点等..."></textarea>
+        </div>
+      </div>
+      
+      <!-- 学生个例 -->
+      <div class="form-row single">
+        <div class="form-group">
+          <label class="form-label">学生个例 <span class="hint">有代表性的学生情况个例，用于分享和激励</span></label>
+          <textarea class="form-textarea" id="f-examples" placeholder="一些有代表性的学生情况个例，用于分享和激励"></textarea>
+        </div>
+      </div>
+      
+      <!-- 学科情况 -->
+      <div class="form-row single">
+        <div class="form-group">
+          <label class="form-label">学科情况 <span class="hint">会议中需要作为背景介绍或铺垫的学科教学信息</span></label>
+          <textarea class="form-textarea" id="f-subjects" placeholder="会议中需要作为背景介绍或铺垫的学科教学信息，如各科学习要点、阶段重点等..."></textarea>
+        </div>
+      </div>
+      
+      <!-- 发言稿结构 -->
+      <div class="section-title">📋 发言稿结构</div>
+      <div class="form-row single">
+        <div class="form-group">
+          <div class="struct-tags" id="structTags3">
+            <span class="struct-tag selected" onclick="this.classList.toggle('selected')">开场问候</span>
+            <span class="struct-tag selected" onclick="this.classList.toggle('selected')">学情反馈</span>
+            <span class="struct-tag selected" onclick="this.classList.toggle('selected')">教学计划</span>
+            <span class="struct-tag selected" onclick="this.classList.toggle('selected')">家校配合建议</span>
+            <span class="struct-tag selected" onclick="this.classList.toggle('selected')">答疑环节</span>
+            <span class="struct-tag selected" onclick="this.classList.toggle('selected')">结束语</span>
+            <button class="add-custom-btn" onclick="showCustom3()">+ 自定义</button>
+          </div>
+          <div class="custom-module-input" id="customModule3">
+            <input type="text" id="customInput3" placeholder="输入自定义模块名称，按回车添加" onkeydown="handleKey3(event)">
+            <span class="custom-module-remove" onclick="cancelCustom3()">✕</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 附加要求 -->
+      <div class="section-title">📎 附加要求</div>
+      <div class="form-row single">
+        <div class="form-group">
+          <label class="form-label">附加要求 <span class="hint">简要描述特殊需求或其他备注信息</span></label>
+          <textarea class="form-textarea" id="f-extra" placeholder="简要描述您的特殊需求或其他备注信息..."></textarea>
+        </div>
+      </div>
+      
+      <button class="btn-submit" onclick="submitSpeechForm()">立 即 生 成</button>
+    </div>
+  </div>
+  
+  <div class="generating-overlay" id="gen">
+    <div class="spinner"></div>
+    <div class="generating-text">AI 正在生成家长会发言稿，请稍候...</div>
+  </div>
+  
+  <script>
+    // 从sessionStorage获取预填数据
+    var preData = null;
+    try {
+      preData = JSON.parse(sessionStorage.getItem('speechFormPreData') || 'null');
+      if (preData) {
+        sessionStorage.removeItem('speechFormPreData');
+        // 填充表单
+        if (preData.grade) {
+          // 检查是否是合并的年级学期格式
+          var gradeSelect = document.getElementById('f-grade');
+          var found = false;
+          for (var i = 0; i < gradeSelect.options.length; i++) {
+            if (gradeSelect.options[i].value === preData.grade) {
+              gradeSelect.value = preData.grade;
+              found = true;
+              break;
+            }
+          }
+          if (!found) {
+            gradeSelect.value = preData.grade;
+          }
+        }
+        if (preData.teacher) document.getElementById('f-teacher').value = preData.teacher;
+        if (preData.theme) document.getElementById('f-theme').value = preData.theme;
+        if (preData.purpose) document.getElementById('f-purpose').value = preData.purpose;
+        if (preData.classinfo) document.getElementById('f-classinfo').value = preData.classinfo;
+        if (preData.examples) document.getElementById('f-examples').value = preData.examples;
+        if (preData.subjects) document.getElementById('f-subjects').value = preData.subjects;
+        if (preData.extra) document.getElementById('f-extra').value = preData.extra;
+      }
+    } catch(e) {}
+    
+    function goBack() {
+      window.location.href = 'index.html';
+    }
+    
+    function showCustom3() {
+      document.getElementById('customModule3').classList.add('show');
+      document.getElementById('customInput3').focus();
+    }
+    
+    function handleKey3(e) {
+      if (e.key === 'Enter') {
+        var n = document.getElementById('customInput3').value.trim();
+        if (n) {
+          var t = document.createElement('span');
+          t.className = 'struct-tag selected';
+          t.textContent = n;
+          t.onclick = function() { this.classList.toggle('selected'); };
+          document.querySelector('.add-custom-btn').before(t);
+          document.getElementById('customInput3').value = '';
+          document.getElementById('customModule3').classList.remove('show');
+        }
+        e.preventDefault();
+      } else if (e.key === 'Escape') {
+        cancelCustom3();
+      }
+    }
+    
+    function cancelCustom3() {
+      document.getElementById('customModule3').classList.remove('show');
+      document.getElementById('customInput3').value = '';
+    }
+    
+    function getSelectedStructs() {
+      return Array.from(document.querySelectorAll('#structTags3 .struct-tag.selected')).map(function(t) { return t.textContent; });
+    }
+    
+    function submitSpeechForm() {
+      document.getElementById('gen').classList.add('show');
+      
+      try {
+        var gradeSemester = document.getElementById('f-grade').value; // 如"三年级上学期"
+        // 从中提取年级（去掉"上学期"或"下学期"）
+        var grade = gradeSemester.replace(/上学期|下学期/, '');
+        var semester = gradeSemester.includes('下学期') ? '下学期' : '上学期';
+        var teacher = document.getElementById('f-teacher').value || grade + '班主任';
+        var meetingTheme = document.getElementById('f-theme').value || '家校携手，共促成长';
+        var purpose = document.getElementById('f-purpose').value || '全面反馈学生在校表现，共同探讨促进学生成长的策略';
+        var classInfo = document.getElementById('f-classinfo').value || '本班学生整体学习态度端正，课堂参与度较高，学习氛围浓厚。';
+        var examples = document.getElementById('f-examples').value || '选取班级中不同层次的代表学生进行案例分享，鼓励家长因材施教。';
+        var subjects = document.getElementById('f-subjects').value || '';
+        var structs = getSelectedStructs();
+        var extra = document.getElementById('f-extra').value || '';
+        
+        var formData = { 
+          grade: gradeSemester, // 保存完整的年级学期
+          teacher: teacher, 
+          theme: meetingTheme, 
+          purpose: purpose, 
+          classinfo: classInfo, 
+          examples: examples, 
+          subjects: subjects, 
+          structs: structs, 
+          extra: extra 
+        };
+        
+        // 开场白
+        var s_intro = '';
+        s_intro += '<p style="font-size:14px;color:#555;line-height:2;margin-bottom:12px;">尊敬的各位家长朋友们：</p>';
+        s_intro += '<p style="font-size:14px;color:#555;line-height:2;margin-bottom:12px;">大家好！首先非常感谢各位家长在百忙之中抽出时间参加今天的家长会。我是' + teacher + '，今天非常荣幸能够与大家面对面地交流孩子的教育成长问题。</p>';
+        s_intro += '<p style="font-size:14px;color:#555;line-height:2;margin-bottom:12px;">今天我们家长会的主题是「' + meetingTheme + '」，主要想围绕以下几个方面和大家进行深入交流：</p>';
+        s_intro += '<ul style="font-size:14px;color:#555;line-height:2;padding-left:24px;margin-bottom:12px;">';
+        s_intro += '<li>班级整体情况介绍</li>';
+        s_intro += '<li>学期学情分析与反馈</li>';
+        s_intro += '<li>各学科教学情况与重点</li>';
+        s_intro += '<li>家校合作的具体建议</li>';
+        s_intro += '<li>家长互动答疑环节</li>';
+        s_intro += '</ul>';
+        s_intro += '<p style="font-size:14px;color:#555;line-height:2;">希望今天的交流能够帮助大家更全面地了解孩子在校的表现，也让我们携手为孩子的健康成长创造更好的环境。</p>';
+        
+        // 开场问候
+        var s_greeting = '';
+        s_greeting += '<p style="font-size:14px;color:#555;line-height:2;margin-bottom:10px;">在正式交流之前，我想先向各位家长表达几点感谢：</p>';
+        s_greeting += '<p style="font-size:14px;color:#555;line-height:2;margin-bottom:10px;">第一，感谢各位家长一直以来对学校和班级工作的理解与支持。孩子的教育离不开家庭和学校的紧密配合，正是因为有大家的信任和配合，我们的班级才能不断进步。</p>';
+        s_greeting += '<p style="font-size:14px;color:#555;line-height:2;margin-bottom:10px;">第二，感谢大家今天准时参会。教育孩子是学校和家庭共同的责任，今天大家能够放下手中的事务来参加家长会，体现了对孩子的重视和对学校的信任。</p>';
+        s_greeting += '<p style="font-size:14px;color:#555;line-height:2;">第三，希望各位家长在今天的交流中畅所欲言，积极分享您在家庭教育中的经验和方法，让我们互相学习，共同提高。</p>';
+        
+        // 学情反馈
+        var s_feedback = '';
+        s_feedback += '<p style="font-size:14px;color:#555;line-height:2;margin-bottom:10px;">' + classInfo + '</p>';
+        s_feedback += '<div style="background:#F8FBFF;border:1px solid #D8E2EE;border-radius:10px;padding:14px 16px;margin-bottom:12px;">';
+        s_feedback += '<div style="font-size:13px;font-weight:700;color:#1B5EA7;margin-bottom:8px;">📊 班级整体表现</div>';
+        s_feedback += '<ul style="font-size:13px;color:#555;line-height:2;padding-left:20px;">';
+        s_feedback += '<li>大部分同学学习态度认真，课堂参与度高，能积极举手发言</li>';
+        s_feedback += '<li>作业完成情况整体良好，但存在个体差异，需要针对性辅导</li>';
+        s_feedback += '<li>班级凝聚力强，集体活动参与积极，学生之间互帮互助氛围浓厚</li>';
+        s_feedback += '<li>学生综合素养逐步提升，在各科目学习中都涌现出一批表现优异的学生</li>';
+        s_feedback += '</ul></div>';
+        s_feedback += '<p style="font-size:14px;color:#555;line-height:2;margin-bottom:10px;">同时，我们也要客观看待班级中存在的问题：</p>';
+        s_feedback += '<ul style="font-size:14px;color:#555;line-height:2;padding-left:24px;">';
+        s_feedback += '<li>部分学生在时间管理和学习计划方面还需加强</li>';
+        s_feedback += '<li>个别学生课堂注意力集中度有待提高，需要家校协同关注</li>';
+        s_feedback += '<li>学生在自主学习能力和探究精神方面还有提升空间</li>';
+        s_feedback += '</ul>';
+        
+        // 学生个例
+        s_feedback += '<div style="background:#FFF9E6;border:1px solid #FFE082;border-radius:10px;padding:14px 16px;margin-top:12px;">';
+        s_feedback += '<div style="font-size:13px;font-weight:700;color:#E65100;margin-bottom:8px;">🌟 学生代表案例</div>';
+        s_feedback += '<p style="font-size:13px;color:#555;line-height:2;margin-bottom:8px;">' + examples + '</p>';
+        s_feedback += '<p style="font-size:13px;color:#555;line-height:2;">以上这些案例告诉我们，每个孩子都有自己的闪光点，关键在于发现并加以培养。希望各位家长能结合自己孩子的特点，因材施教，共同帮助孩子成长进步。</p>';
+        s_feedback += '</div>';
+        
+        // 教学计划
+        var s_plan = '';
+        s_plan += '<p style="font-size:14px;color:#555;line-height:2;margin-bottom:10px;">各位家长，接下来我来介绍一下' + semester + '各学科的教学安排与重点：</p>';
+        s_plan += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">';
+        s_plan += '<div style="background:#F8FBFF;border:1px solid #D8E2EE;border-radius:8px;padding:10px 14px;"><div style="font-size:12px;font-weight:600;color:#1B5EA7;margin-bottom:4px;">📚 语文学科</div><div style="font-size:12px;color:#555;line-height:1.7;">重点培养阅读理解能力与写作表达能力，加强古诗词积累与运用。</div></div>';
+        s_plan += '<div style="background:#F8FBFF;border:1px solid #D8E2EE;border-radius:8px;padding:10px 14px;"><div style="font-size:12px;font-weight:600;color:#1B5EA7;margin-bottom:4px;">🔢 数学学科</div><div style="font-size:12px;color:#555;line-height:1.7;">注重基础计算能力与逻辑思维培养，加强应用题分析与解决能力训练。</div></div>';
+        s_plan += '<div style="background:#F8FBFF;border:1px solid #D8E2EE;border-radius:8px;padding:10px 14px;"><div style="font-size:12px;font-weight:600;color:#1B5EA7;margin-bottom:4px;">🌍 英语学科</div><div style="font-size:12px;color:#555;line-height:1.7;">强化听说读写综合能力培养，增加口语表达与阅读拓展训练。</div></div>';
+        s_plan += '<div style="background:#F8FBFF;border:1px solid #D8E2EE;border-radius:8px;padding:10px 14px;"><div style="font-size:12px;font-weight:600;color:#1B5EA7;margin-bottom:4px;">🎨 其他学科</div><div style="font-size:12px;color:#555;line-height:1.7;">音体美及综合实践课程注重素养培育，促进学生全面发展与个性特长培养。</div></div>';
+        s_plan += '</div>';
+        s_plan += '<p style="font-size:14px;color:#555;line-height:2;margin-bottom:10px;">' + semester + '教学重点：</p>';
+        s_plan += '<ul style="font-size:14px;color:#555;line-height:2;padding-left:24px;">';
+        s_plan += '<li>系统梳理本学期核心知识点，帮助学生构建完整的知识体系</li>';
+        s_plan += '<li>加强学法指导，培养学生自主学习能力和良好的学习习惯</li>';
+        s_plan += '<li>注重分层教学，针对不同层次学生制定个性化提升方案</li>';
+        s_plan += '<li>加强学科实践活动，提升学生综合运用知识解决问题的能力</li>';
+        s_plan += '</ul>';
+        
+        // 家校配合建议
+        var s_cooperation = '';
+        s_cooperation += '<p style="font-size:14px;color:#555;line-height:2;margin-bottom:10px;">孩子的教育需要学校和家庭的共同努力。在此，我向各位家长提出以下几点配合建议：</p>';
+        s_cooperation += '<div style="background:#FFF8F8;border:1px solid #FFCDD2;border-radius:10px;padding:14px 16px;margin-bottom:10px;">';
+        s_cooperation += '<div style="font-size:13px;font-weight:700;color:#C62828;margin-bottom:8px;">⏰ 作息与时间管理</div>';
+        s_cooperation += '<ul style="font-size:13px;color:#555;line-height:2;padding-left:20px;">';
+        s_cooperation += '<li>确保孩子每天有充足的睡眠时间（建议8小时以上）</li>';
+        s_cooperation += '<li>帮助孩子制定合理的学习计划，培养时间管理意识</li>';
+        s_cooperation += '<li>控制孩子使用电子产品的时间，引导健康使用习惯</li>';
+        s_cooperation += '</ul></div>';
+        s_cooperation += '<div style="background:#EEF4FF;border:1px solid #C8DAF5;border-radius:10px;padding:14px 16px;margin-bottom:10px;">';
+        s_cooperation += '<div style="font-size:13px;font-weight:700;color:#1B5EA7;margin-bottom:8px;">📖 家庭学习指导</div>';
+        s_cooperation += '<ul style="font-size:13px;color:#555;line-height:2;padding-left:20px;">';
+        s_cooperation += '<li>每天抽时间关注孩子的作业完成情况，适度辅导但不要包办代替</li>';
+        s_cooperation += '<li>为孩子营造良好的家庭学习氛围，以身作则树立榜样</li>';
+        s_cooperation += '<li>多与孩子进行学习方面的沟通，了解他们的困惑与需求</li>';
+        s_cooperation += '<li>鼓励孩子多阅读课外书籍，拓宽知识视野，培养阅读习惯</li>';
+        s_cooperation += '</ul></div>';
+        s_cooperation += '<div style="background:#E8F5E9;border:1px solid #A5D6A7;border-radius:10px;padding:14px 16px;margin-bottom:10px;">';
+        s_cooperation += '<div style="font-size:13px;font-weight:700;color:#2E7D32;margin-bottom:8px;">💬 沟通与心理关怀</div>';
+        s_cooperation += '<ul style="font-size:13px;color:#555;line-height:2;padding-left:20px;">';
+        s_cooperation += '<li>关注孩子的情绪变化，及时进行心理疏导与关怀</li>';
+        s_cooperation += '<li>多给予孩子积极的鼓励与肯定，增强自信心与学习动力</li>';
+        s_cooperation += '<li>建立平等对话的亲子关系，倾听孩子的想法与感受</li>';
+        s_cooperation += '<li>避免过度施压，关注孩子心理健康与承受能力</li>';
+        s_cooperation += '</ul></div>';
+        s_cooperation += '<div style="background:#E3F2FD;border:1px solid #90CAF9;border-radius:10px;padding:14px 16px;">';
+        s_cooperation += '<div style="font-size:13px;font-weight:700;color:#1565C0;margin-bottom:8px;">🤝 家校协同配合</div>';
+        s_cooperation += '<ul style="font-size:13px;color:#555;line-height:2;padding-left:20px;">';
+        s_cooperation += '<li>积极配合学校和班级的工作要求，关注班级通知与消息</li>';
+        s_cooperation += '<li>主动与老师沟通孩子在家和在校的表现，形成教育合力</li>';
+        s_cooperation += '<li>积极参加学校组织的各类家长活动和开放日</li>';
+        s_cooperation += '<li>如有任何问题或建议，欢迎随时与老师联系沟通</li>';
+        s_cooperation += '</ul></div>';
+        
+        // 答疑环节
+        var s_qa = '';
+        s_qa += '<p style="font-size:14px;color:#555;line-height:2;margin-bottom:10px;">各位家长，以上是我今天的发言内容。接下来，我们进入家长答疑环节。</p>';
+        s_qa += '<p style="font-size:14px;color:#555;line-height:2;margin-bottom:10px;">在座的各位家长在教育孩子的过程中，一定有很多经验和心得，也会有一些困惑和疑问。现在我把时间交给大家，欢迎各位畅所欲言：</p>';
+        s_qa += '<ul style="font-size:14px;color:#555;line-height:2;padding-left:24px;margin-bottom:12px;">';
+        s_qa += '<li>关于孩子学习习惯培养方面的问题</li>';
+        s_qa += '<li>关于学科辅导与作业指导方面的问题</li>';
+        s_qa += '<li>关于孩子心理健康与情绪管理方面的问题</li>';
+        s_qa += '<li>关于家校沟通与配合方面的建议</li>';
+        s_qa += '<li>其他您关心的问题</li>';
+        s_qa += '</ul>';
+        s_qa += '<p style="font-size:14px;color:#555;line-height:2;margin-bottom:10px;">（家长提问，教师逐一耐心解答，做好记录并在会后整理反馈）</p>';
+        s_qa += '<p style="font-size:14px;color:#555;line-height:2;margin-bottom:10px;">感谢各位家长的积极提问和宝贵意见！针对大家提出的共性问题，我会整理后在班级群中进行统一回复；对于个性化问题，请会后单独与我沟通，我会尽我所能提供帮助。</p>';
+        
+        // 结束语
+        var s_ending = '';
+        s_ending += '<p style="font-size:14px;color:#555;line-height:2;margin-bottom:10px;">尊敬的各位家长，今天的家长会到此即将接近尾声。</p>';
+        s_ending += '<p style="font-size:14px;color:#555;line-height:2;margin-bottom:10px;">' + purpose + '这是我们今天家长会的核心目的，也是我在接下来的工作中会重点关注的方面。</p>';
+        s_ending += '<p style="font-size:14px;color:#555;line-height:2;margin-bottom:10px;">每一个孩子的成长都倾注了家庭和学校共同的心血。教育是一场长跑，需要我们有足够的耐心和智慧，让我们携手同行，用爱与责任共同托起明天的太阳，为孩子的健康成长保驾护航！</p>';
+        s_ending += '<p style="font-size:14px;color:#555;line-height:2;margin-bottom:10px;">最后，再次感谢各位家长的到来与支持！如果您在会后有任何问题或建议，欢迎随时与我联系沟通。期待我们携手合作，共同见证孩子们的成长与进步！</p>';
+        s_ending += '<p style="font-size:14px;color:#555;line-height:2;margin-bottom:10px;">祝各位家长身体健康，工作顺利，阖家幸福！</p>';
+        s_ending += '<p style="font-size:14px;color:#555;line-height:2;text-align:right;margin-top:16px;">' + teacher + '</p>';
+        s_ending += '<p style="font-size:14px;color:#555;line-height:2;text-align:right;">' + new Date().getFullYear() + '年</p>';
+        
+        // 构建内容区
+        var allContent = {};
+        allContent['开场问候'] = { title: '一、开场问候', content: s_greeting };
+        allContent['学情反馈'] = { title: '二、学情反馈', content: s_feedback };
+        allContent['教学计划'] = { title: '三、教学计划', content: s_plan };
+        allContent['家校配合建议'] = { title: '四、家校配合建议', content: s_cooperation };
+        allContent['答疑环节'] = { title: '五、答疑环节', content: s_qa };
+        allContent['结束语'] = { title: '六、结束语', content: s_ending };
+        
+        var contentHTML = '<h2 style="font-size:16px;color:#1B5EA7;margin-bottom:14px;font-weight:700;border-left:4px solid #1B5EA7;padding-left:10px;">开场白</h2>' + s_intro;
+        
+        for (var idx = 0; idx < structs.length; idx++) {
+          var s = structs[idx];
+          if (allContent[s]) {
+            contentHTML += '<h2 style="font-size:15px;color:#1B5EA7;margin:20px 0 10px;font-weight:700;border-left:3px solid #1B5EA7;padding-left:8px;">' + allContent[s].title + '</h2>' + allContent[s].content;
+          } else {
+            contentHTML += '<h2 style="font-size:15px;color:#1B5EA7;margin:20px 0 10px;font-weight:700;border-left:3px solid #1B5EA7;padding-left:8px;">' + s + '</h2><p style="color:#888;font-size:13px;">（' + s + '具体内容可根据实际情况补充）</p>';
+          }
+        }
+        
+        if (extra) {
+          contentHTML += '<h2 style="font-size:15px;color:#1B5EA7;margin:20px 0 10px;font-weight:700;border-left:3px solid #1B5EA7;padding-left:8px;">附：附加说明</h2><p style="font-size:13px;color:#555;line-height:1.8;">' + extra.replace(/\n/g, '<br>') + '</p>';
+        }
+        
+        // 保存数据并跳转
+        var data = { title: grade + semester + '家长会发言稿', content: contentHTML };
+        sessionStorage.setItem('speechResult', JSON.stringify(data));
+        sessionStorage.setItem('speechFormData', JSON.stringify(formData));
+        
+        var resultWin = window.open('speech-result.html', '_blank');
+        if (!resultWin) {
+          alert('请允许弹出窗口以查看结果');
+        }
+        
+        document.getElementById('gen').classList.remove('show');
+      } catch (err) {
+        alert('生成失败：' + err.message);
+        document.getElementById('gen').classList.remove('show');
+      }
+    }
+  </script>
+</body>
+</html>

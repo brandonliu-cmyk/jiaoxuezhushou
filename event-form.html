@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>填写活动策划参数 - 兆涵科技</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: "Microsoft YaHei","PingFang SC",sans-serif; background: #F0F4F8; color: #333; min-height: 100vh; }
+    
+    .back-btn { position: fixed; left: 20px; top: 16px; background: #fff; border: 1.5px solid #D8E2EE; color: #1B5EA7; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,.1); transition: all .2s; z-index: 100; }
+    .back-btn:hover { background: #1B5EA7; color: #fff; border-color: #1B5EA7; }
+    .back-btn svg { width: 18px; height: 18px; }
+    
+    .top-bar { background: #1B5EA7; color: #fff; padding: 0 40px; height: 56px; display: flex; align-items: center; gap: 10px; box-shadow: 0 2px 8px rgba(0,0,0,.15); position: sticky; top: 0; z-index: 10; }
+    .top-bar-title { font-size: 16px; font-weight: 600; }
+    .top-bar-badge { background: rgba(255,255,255,.2); font-size: 12px; padding: 3px 12px; border-radius: 20px; }
+    
+    .container { max-width: 860px; margin: 28px auto 60px; padding: 0 20px; }
+    .card { background: #fff; border-radius: 16px; border: 1px solid #E8EEF4; box-shadow: 0 2px 12px rgba(27,94,167,.06); padding: 32px 36px; }
+    .page-title { font-size: 20px; font-weight: 700; color: #1a1a2e; margin-bottom: 6px; }
+    .page-sub { font-size: 13px; color: #999; margin-bottom: 28px; }
+    
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+    .form-row.single { grid-template-columns: 1fr; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-label { font-size: 13px; font-weight: 600; color: #444; }
+    .form-label .req { color: #E53935; }
+    .form-label .hint { color: #999; font-weight: 400; font-size: 12px; }
+    .form-input,.form-select,.form-textarea { border: 1.5px solid #D8E2EE; border-radius: 10px; padding: 10px 14px; font-size: 14px; color: #333; outline: none; transition: border-color .2s,box-shadow .2s; font-family: inherit; background: #fff; width: 100%; }
+    .form-input:focus,.form-select:focus,.form-textarea:focus { border-color: #1B5EA7; box-shadow: 0 0 0 3px rgba(27,94,167,.1); }
+    .form-input::placeholder,.form-textarea::placeholder { color: #B0BDD0; }
+    .form-textarea { resize: vertical; min-height: 80px; line-height: 1.8; }
+    
+    .section-title { font-size: 14px; font-weight: 700; color: #1B5EA7; margin: 20px 0 10px; padding-bottom: 6px; border-bottom: 1.5px solid #D8E2EE; }
+    
+    .struct-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+    .struct-tag { background: #EEF4FF; border: 1.5px solid #C8DAF5; color: #1B5EA7; padding: 5px 14px; border-radius: 20px; font-size: 13px; cursor: pointer; transition: all .2s; user-select: none; }
+    .struct-tag:hover,.struct-tag.selected { background: #1B5EA7; color: #fff; border-color: #1B5EA7; }
+    .add-custom-btn { background: transparent; border: 1.5px dashed #C8DAF5; color: #888; padding: 5px 14px; border-radius: 20px; font-size: 13px; cursor: pointer; }
+    .add-custom-btn:hover { border-color: #1B5EA7; color: #1B5EA7; }
+    
+    .custom-module-input { display: none; align-items: center; gap: 8px; margin-top: 8px; }
+    .custom-module-input.show { display: flex; }
+    .custom-module-input input { flex: 1; border: 1.5px solid #D8E2EE; border-radius: 8px; padding: 6px 12px; font-size: 13px; outline: none; font-family: inherit; }
+    .custom-module-remove { color: #E53935; cursor: pointer; font-size: 16px; font-weight: bold; }
+    
+    .btn-submit { width: 100%; background: linear-gradient(135deg,#1B5EA7,#0D47A1); color: #fff; border: none; padding: 13px; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 16px rgba(27,94,167,.35); transition: all .2s; letter-spacing: 2px; margin-top: 24px; }
+    .btn-submit:hover { box-shadow: 0 6px 22px rgba(27,94,167,.5); transform: translateY(-1px); }
+    
+    .generating-overlay { display: none; position: fixed; inset: 0; background: rgba(255,255,255,.88); z-index: 999; align-items: center; justify-content: center; flex-direction: column; gap: 16px; }
+    .generating-overlay.show { display: flex; }
+    .spinner { width: 44px; height: 44px; border: 4px solid #D8E2EE; border-top-color: #1B5EA7; border-radius: 50%; animation: spin .8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .generating-text { font-size: 15px; color: #555; font-weight: 500; }
+  </style>
+</head>
+<body>
+  <button class="back-btn" onclick="goBack()" title="返回首页">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M15 18l-6-6 6-6"/>
+    </svg>
+  </button>
+  
+  <div class="top-bar">
+    <span class="top-bar-title">🎉 填写活动策划参数</span>
+    <span class="top-bar-badge">AI 已解析 · 可手动调整</span>
+  </div>
+  
+  <div class="container">
+    <div class="card">
+      <div class="page-title">校园活动策划 · 参数确认</div>
+      <div class="page-sub">请确认以下 AI 解析的参数，如有需要可直接修改，确认后生成完整活动策划方案</div>
+      
+      <!-- 基础信息区 -->
+      <div class="section-title">📌 基础信息</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">活动主题 <span class="req">*</span></label>
+          <input class="form-input" id="f-theme" placeholder="请输入简洁响亮的活动名称，例如：'春日诗词'校园文化节">
+        </div>
+        <div class="form-group">
+          <label class="form-label">活动对象 <span class="req">*</span></label>
+          <input class="form-input" id="f-target" placeholder="明确活动参与主体，如：小学部全体学生">
+        </div>
+      </div>
+      
+      <!-- 活动目标 -->
+      <div class="section-title">🎯 活动目标</div>
+      <div class="form-row single">
+        <div class="form-group">
+          <label class="form-label">活动目标 <span class="hint">用一句话说明</span></label>
+          <textarea class="form-textarea" id="f-goals" placeholder="例如：激发科学兴趣，培养团队合作与创新能力"></textarea>
+        </div>
+      </div>
+      
+      <!-- 时间与规模 -->
+      <div class="section-title">🗓 时间与规模</div>
+      <div class="form-row single">
+        <div class="form-group">
+          <label class="form-label">时间与规模 <span class="hint">格式示例：2026年1月17日~18日 + 年级内/全校性/邀请家长参与</span></label>
+          <textarea class="form-textarea" id="f-datetime" placeholder="明确时间和规模，如：2026年1月17日~18日 + 全校性"></textarea>
+        </div>
+      </div>
+      
+      <!-- 活动地点 -->
+      <div class="form-row single">
+        <div class="form-group">
+          <label class="form-label">活动地点</label>
+          <input class="form-input" id="f-location" placeholder="明确活动地点，例如：学校大操场 或 1001大会议厅">
+        </div>
+      </div>
+      
+      <!-- 活动形式 -->
+      <div class="section-title">🏷 活动形式</div>
+      <div class="form-row single">
+        <div class="form-group">
+          <div class="struct-tags" id="formTags">
+            <span class="struct-tag selected" onclick="this.classList.toggle('selected')">主题班会</span>
+            <span class="struct-tag" onclick="this.classList.toggle('selected')">竞技比赛</span>
+            <span class="struct-tag" onclick="this.classList.toggle('selected')">作品展示</span>
+            <span class="struct-tag" onclick="this.classList.toggle('selected')">劳动教育</span>
+            <span class="struct-tag" onclick="this.classList.toggle('selected')">文艺汇演</span>
+            <span class="struct-tag" onclick="this.classList.toggle('selected')">实践活动</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 方案结构 -->
+      <div class="section-title">📋 方案结构</div>
+      <div class="form-row single">
+        <div class="form-group">
+          <div class="struct-tags" id="structTags2">
+            <span class="struct-tag selected" onclick="this.classList.toggle('selected')">活动基本信息</span>
+            <span class="struct-tag selected" onclick="this.classList.toggle('selected')">组织分工</span>
+            <span class="struct-tag selected" onclick="this.classList.toggle('selected')">活动流程</span>
+            <span class="struct-tag selected" onclick="this.classList.toggle('selected')">物资清单</span>
+            <span class="struct-tag selected" onclick="this.classList.toggle('selected')">安全保障</span>
+            <span class="struct-tag selected" onclick="this.classList.toggle('selected')">应急预案</span>
+            <button class="add-custom-btn" onclick="showCustomInput()">+ 自定义</button>
+          </div>
+          <div class="custom-module-input" id="customModule2">
+            <input type="text" id="customInput2" placeholder="输入自定义模块名称，按回车添加" onkeydown="handleKey2(event)">
+            <span class="custom-module-remove" onclick="cancelCustom2()">✕</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 附加要求 -->
+      <div class="section-title">📎 附加要求</div>
+      <div class="form-row single">
+        <div class="form-group">
+          <label class="form-label">附加要求 <span class="hint">简要描述您的教学资源或特殊需求</span></label>
+          <textarea class="form-textarea" id="f-extra" placeholder="简要描述您的教学资源、特殊需求或其他备注信息..."></textarea>
+        </div>
+      </div>
+      
+      <button class="btn-submit" onclick="submitEventForm()">立 即 生 成</button>
+    </div>
+  </div>
+  
+  <div class="generating-overlay" id="gen">
+    <div class="spinner"></div>
+    <div class="generating-text">AI 正在生成活动策划方案，请稍候...</div>
+  </div>
+  
+  <script>
+    // 从sessionStorage获取预填数据
+    var preData = null;
+    try {
+      preData = JSON.parse(sessionStorage.getItem('eventFormPreData') || 'null');
+      if (preData) {
+        sessionStorage.removeItem('eventFormPreData');
+        // 填充表单
+        if (preData.theme) document.getElementById('f-theme').value = preData.theme;
+        if (preData.target) document.getElementById('f-target').value = preData.target;
+        if (preData.goals) document.getElementById('f-goals').value = preData.goals;
+        if (preData.datetime) document.getElementById('f-datetime').value = preData.datetime;
+        if (preData.location) document.getElementById('f-location').value = preData.location;
+        if (preData.extra) document.getElementById('f-extra').value = preData.extra;
+      }
+    } catch(e) {}
+    
+    function goBack() {
+      window.location.href = 'index.html';
+    }
+    
+    function showCustomInput() {
+      document.getElementById('customModule2').classList.add('show');
+      document.getElementById('customInput2').focus();
+    }
+    
+    function handleKey2(e) {
+      if (e.key === 'Enter') {
+        var n = document.getElementById('customInput2').value.trim();
+        if (n) {
+          var t = document.createElement('span');
+          t.className = 'struct-tag selected';
+          t.textContent = n;
+          t.onclick = function() { this.classList.toggle('selected'); };
+          document.querySelector('.add-custom-btn').before(t);
+          document.getElementById('customInput2').value = '';
+          document.getElementById('customModule2').classList.remove('show');
+        }
+        e.preventDefault();
+      } else if (e.key === 'Escape') {
+        cancelCustom2();
+      }
+    }
+    
+    function cancelCustom2() {
+      document.getElementById('customModule2').classList.remove('show');
+      document.getElementById('customInput2').value = '';
+    }
+    
+    function getSelectedForms() {
+      return Array.from(document.querySelectorAll('#formTags .struct-tag.selected')).map(function(t) { return t.textContent; });
+    }
+    
+    function getSelectedStructs() {
+      return Array.from(document.querySelectorAll('#structTags2 .struct-tag.selected')).map(function(t) { return t.textContent; });
+    }
+    
+    function submitEventForm() {
+      try {
+        var theme = document.getElementById('f-theme').value || '校园主题活动';
+        var target = document.getElementById('f-target').value || '全体学生';
+        var goals = document.getElementById('f-goals').value || '通过本次活动，激发学生兴趣，培养综合素养';
+        var datetime = document.getElementById('f-datetime').value || '';
+        var location = document.getElementById('f-location').value || '学校操场';
+        var forms = getSelectedForms().join('、');
+        var structs = getSelectedStructs();
+        var extra = document.getElementById('f-extra').value || '';
+        
+        var formData = { theme: theme, target: target, goals: goals, datetime: datetime, location: location, forms: forms, structs: structs, extra: extra };
+        
+        // 生成内容
+        var p = '<div style="max-width:900px;margin:0 auto;font-family:Microsoft YaHei,sans-serif;background:#F0F4F8;min-height:100vh;padding-bottom:40px;">';
+        p += '<div style="max-width:860px;margin:24px auto;background:#fff;border-radius:14px;border:1.5px solid #E8EEF4;overflow:hidden;box-shadow:0 2px 12px rgba(27,94,167,.06);">';
+        p += '<div style="background:linear-gradient(135deg,#1B5EA7,#0D47A1);color:#fff;padding:14px 22px;font-size:14px;font-weight:600;">🎉 ' + theme + ' - 活动策划方案</div>';
+        
+        // 活动基本信息
+        var s_basic = '';
+        s_basic += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:4px;">';
+        s_basic += '<div style="background:#F8FBFF;border:1px solid #D8E2EE;border-radius:10px;padding:12px 16px;"><div style="font-size:11px;color:#999;font-weight:600;margin-bottom:4px;">活动主题</div><div style="font-size:14px;color:#1a1a2e;font-weight:600;">' + theme + '</div></div>';
+        s_basic += '<div style="background:#F8FBFF;border:1px solid #D8E2EE;border-radius:10px;padding:12px 16px;"><div style="font-size:11px;color:#999;font-weight:600;margin-bottom:4px;">活动对象</div><div style="font-size:14px;color:#1a1a2e;font-weight:600;">' + target + '</div></div>';
+        s_basic += '</div>';
+        s_basic += '<div style="background:#F8FBFF;border:1px solid #D8E2EE;border-radius:10px;padding:12px 16px;margin-bottom:4px;"><div style="font-size:11px;color:#999;font-weight:600;margin-bottom:4px;">活动目标</div><div style="font-size:14px;color:#1a1a2e;line-height:1.7;">' + goals + '</div></div>';
+        s_basic += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">';
+        s_basic += '<div style="background:#F8FBFF;border:1px solid #D8E2EE;border-radius:10px;padding:12px 16px;"><div style="font-size:11px;color:#999;font-weight:600;margin-bottom:4px;">时间与规模</div><div style="font-size:14px;color:#1a1a2e;">' + (datetime || '待定') + '</div></div>';
+        s_basic += '<div style="background:#F8FBFF;border:1px solid #D8E2EE;border-radius:10px;padding:12px 16px;"><div style="font-size:11px;color:#999;font-weight:600;margin-bottom:4px;">活动地点</div><div style="font-size:14px;color:#1a1a2e;">' + location + '</div></div>';
+        s_basic += '<div style="background:#F8FBFF;border:1px solid #D8E2EE;border-radius:10px;padding:12px 16px;"><div style="font-size:11px;color:#999;font-weight:600;margin-bottom:4px;">活动形式</div><div style="font-size:14px;color:#1a1a2e;">' + (forms || '待定') + '</div></div>';
+        s_basic += '</div>';
+        
+        // 组织分工
+        var s_org = '';
+        s_org += '<div style="margin-bottom:8px;"><div style="font-size:13px;font-weight:700;color:#1B5EA7;margin-bottom:8px;">（一）领导小组</div>';
+        s_org += '<div style="background:#FAFAFA;border:1px solid #E8EEF4;border-radius:8px;padding:12px 16px;margin-bottom:8px;">';
+        s_org += '<div style="font-size:13px;font-weight:600;color:#333;margin-bottom:6px;">组长：</div><div style="font-size:13px;color:#555;line-height:1.7;">负责活动整体统筹与决策，协调各部门工作，把控活动整体方向与进度。</div></div>';
+        s_org += '<div style="background:#FAFAFA;border:1px solid #E8EEF4;border-radius:8px;padding:12px 16px;margin-bottom:8px;">';
+        s_org += '<div style="font-size:13px;font-weight:600;color:#333;margin-bottom:6px;">副组长：</div><div style="font-size:13px;color:#555;line-height:1.7;">协助组长开展工作，负责具体事务的落实与监督，及时向组长汇报进展。</div></div>';
+        s_org += '<div style="background:#FAFAFA;border:1px solid #E8EEF4;border-radius:8px;padding:12px 16px;">';
+        s_org += '<div style="font-size:13px;font-weight:600;color:#333;margin-bottom:6px;">组员：</div><div style="font-size:13px;color:#555;line-height:1.7;">负责各项具体工作的执行与跟进，配合组长与副组长完成活动各环节任务。</div></div></div>';
+        s_org += '<div style="margin-bottom:8px;"><div style="font-size:13px;font-weight:700;color:#1B5EA7;margin-bottom:8px;">（二）执行小组</div>';
+        s_org += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">';
+        s_org += '<div style="background:#FAFAFA;border:1px solid #E8EEF4;border-radius:8px;padding:10px 14px;"><div style="font-size:12px;font-weight:600;color:#1B5EA7;margin-bottom:4px;">📝 宣传组</div><div style="font-size:12px;color:#555;line-height:1.6;">负责活动前期宣传、氛围营造、拍照记录及后期报道撰写。</div></div>';
+        s_org += '<div style="background:#FAFAFA;border:1px solid #E8EEF4;border-radius:8px;padding:10px 14px;"><div style="font-size:12px;font-weight:600;color:#1B5EA7;margin-bottom:4px;">🔧 后勤组</div><div style="font-size:12px;color:#555;line-height:1.6;">负责场地布置、设备调试、活动道具准备及现场物资管理。</div></div>';
+        s_org += '<div style="background:#FAFAFA;border:1px solid #E8EEF4;border-radius:8px;padding:10px 14px;"><div style="font-size:12px;font-weight:600;color:#1B5EA7;margin-bottom:4px;">🎤 主持组</div><div style="font-size:12px;color:#555;line-height:1.6;">负责活动主持词撰写、主持人培训及现场流程引导。</div></div>';
+        s_org += '<div style="background:#FAFAFA;border:1px solid #E8EEF4;border-radius:8px;padding:10px 14px;"><div style="font-size:12px;font-weight:600;color:#1B5EA7;margin-bottom:4px;">🏥 医疗组</div><div style="font-size:12px;color:#555;line-height:1.6;">负责现场医疗保障，准备常用药品及急救设备，及时处理突发状况。</div></div>';
+        s_org += '<div style="background:#FAFAFA;border:1px solid #E8EEF4;border-radius:8px;padding:10px 14px;"><div style="font-size:12px;font-weight:600;color:#1B5EA7;margin-bottom:4px;">🧑‍🏫 教师协助组</div><div style="font-size:12px;color:#555;line-height:1.6;">负责组织学生、维护秩序，配合各小组完成活动执行与现场管理。</div></div>';
+        s_org += '<div style="background:#FAFAFA;border:1px solid #E8EEF4;border-radius:8px;padding:10px 14px;"><div style="font-size:12px;font-weight:600;color:#1B5EA7;margin-bottom:4px;">📋 评比组</div><div style="font-size:12px;color:#555;line-height:1.6;">负责活动评分标准制定、评委安排及比赛结果的统计与公示。</div></div>';
+        s_org += '</div></div>';
+        
+        // 活动流程
+        var s_flow = '';
+        s_flow += '<div style="display:flex;align-items:flex-start;gap:0;">';
+        s_flow += '<div style="width:100px;background:#1B5EA7;color:#fff;padding:10px 12px;border-radius:8px 0 0 8px;text-align:center;flex-shrink:0;"><div style="font-size:12px;font-weight:600;">前期准备</div><div style="font-size:11px;opacity:0.85;margin-top:2px;">活动前2周</div></div>';
+        s_flow += '<div style="flex:1;border:1px solid #D8E2EE;border-left:none;border-radius:0 8px 8px 0;padding:10px 14px;background:#fff;"><div style="font-size:13px;color:#333;line-height:1.7;">确定活动主题与方案，成立筹备小组；完成活动申报与审批；准备活动所需物资与设备；做好活动宣传与学生动员工作。</div></div></div>';
+        s_flow += '<div style="display:flex;align-items:flex-start;gap:0;margin-top:10px;">';
+        s_flow += '<div style="width:100px;background:#1565C0;color:#fff;padding:10px 12px;border-radius:8px 0 0 8px;text-align:center;flex-shrink:0;"><div style="font-size:12px;font-weight:600;">活动当天</div><div style="font-size:11px;opacity:0.85;margin-top:2px;">活动当日</div></div>';
+        s_flow += '<div style="flex:1;border:1px solid #D8E2EE;border-left:none;border-radius:0 8px 8px 0;padding:10px 14px;background:#fff;"><div style="font-size:13px;color:#333;line-height:1.7;">08:00 前完成场地布置与设备调试；08:30 参加人员签到入场；09:00 活动正式开始，主持人开场，依次开展各环节；12:00 活动结束，合影留念；12:30 场地整理与物资回收。</div></div></div>';
+        s_flow += '<div style="display:flex;align-items:flex-start;gap:0;margin-top:10px;">';
+        s_flow += '<div style="width:100px;background:#0D47A1;color:#fff;padding:10px 12px;border-radius:8px 0 0 8px;text-align:center;flex-shrink:0;"><div style="font-size:12px;font-weight:600;">后期收尾</div><div style="font-size:11px;opacity:0.85;margin-top:2px;">活动后1周</div></div>';
+        s_flow += '<div style="flex:1;border:1px solid #D8E2EE;border-left:none;border-radius:0 8px 8px 0;padding:10px 14px;background:#fff;"><div style="font-size:13px;color:#333;line-height:1.7;">活动总结与资料归档；评选表彰优秀个人与集体；撰写活动通讯稿并进行宣传报道；收集师生反馈意见，持续改进活动质量。</div></div></div>';
+        
+        // 物资清单
+        var s_materials = '';
+        s_materials += '<table style="width:100%;border-collapse:collapse;font-size:13px;">';
+        s_materials += '<thead><tr style="background:#EEF4FF;"><th style="padding:9px 12px;text-align:left;color:#1B5EA7;font-weight:600;border-bottom:2px solid #D8E2EE;">类别</th><th style="padding:9px 12px;text-align:left;color:#1B5EA7;font-weight:600;border-bottom:2px solid #D8E2EE;">物资名称</th><th style="padding:9px 12px;text-align:center;color:#1B5EA7;font-weight:600;border-bottom:2px solid #D8E2EE;">数量</th><th style="padding:9px 12px;text-align:center;color:#1B5EA7;font-weight:600;border-bottom:2px solid #D8E2EE;">备注</th></tr></thead>';
+        s_materials += '<tbody>';
+        s_materials += '<tr><td style="padding:8px 12px;border-bottom:1px solid #F0F4F8;color:#333;font-weight:600;">音响设备</td><td style="padding:8px 12px;border-bottom:1px solid #F0F4F8;color:#555;">话筒、音响、投影仪</td><td style="padding:8px 12px;border-bottom:1px solid #F0F4F8;text-align:center;color:#555;">若干</td><td style="padding:8px 12px;border-bottom:1px solid #F0F4F8;text-align:center;color:#555;">提前调试</td></tr>';
+        s_materials += '<tr><td style="padding:8px 12px;border-bottom:1px solid #F0F4F8;color:#333;font-weight:600;">场地布置</td><td style="padding:8px 12px;border-bottom:1px solid #F0F4F8;color:#555;">横幅、气球、彩旗、展板</td><td style="padding:8px 12px;border-bottom:1px solid #F0F4F8;text-align:center;color:#555;">按需准备</td><td style="padding:8px 12px;border-bottom:1px solid #F0F4F8;text-align:center;color:#555;">提前一天布置</td></tr>';
+        s_materials += '<tr><td style="padding:8px 12px;border-bottom:1px solid #F0F4F8;color:#333;font-weight:600;">文具用品</td><td style="padding:8px 12px;border-bottom:1px solid #F0F4F8;color:#555;">奖状、证书、笔、记分册</td><td style="padding:8px 12px;border-bottom:1px solid #F0F4F8;text-align:center;color:#555;">按参与人数</td><td style="padding:8px 12px;border-bottom:1px solid #F0F4F8;text-align:center;color:#555;">提前印刷</td></tr>';
+        s_materials += '<tr><td style="padding:8px 12px;border-bottom:1px solid #F0F4F8;color:#333;font-weight:600;">医疗保障</td><td style="padding:8px 12px;border-bottom:1px solid #F0F4F8;color:#555;">急救药箱、矿泉水、纸巾</td><td style="padding:8px 12px;border-bottom:1px solid #F0F4F8;text-align:center;color:#555;">若干</td><td style="padding:8px 12px;border-bottom:1px solid #F0F4F8;text-align:center;color:#555;">设置在观众席旁</td></tr>';
+        s_materials += '<tr><td style="padding:8px 12px;color:#333;font-weight:600;">奖品证书</td><td style="padding:8px 12px;color:#555;">奖状、奖牌、小礼品</td><td style="padding:8px 12px;text-align:center;color:#555;">按奖项设置</td><td style="padding:8px 12px;text-align:center;color:#555;">提前采购到位</td></tr>';
+        s_materials += '</tbody></table>';
+        
+        // 安全保障
+        var s_safety = '';
+        s_safety += '<div style="background:#FFF8F8;border:1px solid #FFCDD2;border-radius:10px;padding:14px 16px;margin-bottom:10px;">';
+        s_safety += '<div style="font-size:13px;font-weight:700;color:#C62828;margin-bottom:8px;">⚠️ 场地安全</div>';
+        s_safety += '<div style="font-size:13px;color:#555;line-height:1.7;">活动前对场地进行全面安全检查，排除用电隐患、消防通道堵塞、地面积水等不安全因素；确保活动区域地面平整无障碍物；活动期间保持场地通风与照明充足。</div></div>';
+        s_safety += '<div style="background:#FFF8F8;border:1px solid #FFCDD2;border-radius:10px;padding:14px 16px;margin-bottom:10px;">';
+        s_safety += '<div style="font-size:13px;font-weight:700;color:#C62828;margin-bottom:8px;">👥 人员管理</div>';
+        s_safety += '<div style="font-size:13px;color:#555;line-height:1.7;">严格控制活动参与人数，安排专人负责现场秩序维护；各班班主任全程随班负责，组织学生有序参与各项活动；设置安全引导员，引导学生安全上下场，防止拥挤踩踏。</div></div>';
+        s_safety += '<div style="background:#FFF8F8;border:1px solid #FFCDD2;border-radius:10px;padding:14px 16px;margin-bottom:10px;">';
+        s_safety += '<div style="font-size:13px;font-weight:700;color:#C62828;margin-bottom:8px;">🏥 医疗保障</div>';
+        s_safety += '<div style="font-size:13px;color:#555;line-height:1.7;">提前与校医室沟通，配备专业医护人员值守；准备常用急救药品、创可贴、消毒液等医疗物资；制定受伤应急处置流程，发现学生受伤立即进行处置并送医。</div></div>';
+        s_safety += '<div style="background:#FFF8F8;border:1px solid #FFCDD2;border-radius:10px;padding:14px 16px;">';
+        s_safety += '<div style="font-size:13px;font-weight:700;color:#C62828;margin-bottom:8px;">🚨 消防安全</div>';
+        s_safety += '<div style="font-size:13px;color:#555;line-height:1.7;">活动期间确保所有消防通道畅通无阻；场地内禁止明火及易燃易爆物品；配备灭火器等消防器材，安排专人熟悉灭火器位置及使用方法。</div></div>';
+        
+        // 应急预案
+        var s_emergency = '';
+        s_emergency += '<div style="border-left:4px solid #E53935;padding-left:14px;margin-bottom:12px;">';
+        s_emergency += '<div style="font-size:13px;font-weight:700;color:#C62828;margin-bottom:6px;">1. 突发疾病应急处置</div>';
+        s_emergency += '<div style="font-size:13px;color:#555;line-height:1.7;">发现学生突发疾病或身体不适，立即通知现场医护人员进行初步处置；如情况严重，在第一时间拨打120急救电话，同时联系学生家长并向学校领导汇报；安排专人护送就医，做好现场秩序维护。</div></div>';
+        s_emergency += '<div style="border-left:4px solid #F57C00;padding-left:14px;margin-bottom:12px;">';
+        s_emergency += '<div style="font-size:13px;font-weight:700;color:#E65100;margin-bottom:6px;">2. 意外伤害应急处置</div>';
+        s_emergency += '<div style="font-size:13px;color:#555;line-height:1.7;">发生意外伤害时，立即停止相关活动，保护现场；现场医护人员进行应急处理；根据伤情决定是否送医，同时做好伤情记录；及时与家长沟通，妥善处理后续事宜。</div></div>';
+        s_emergency += '<div style="border-left:4px solid #1565C0;padding-left:14px;margin-bottom:12px;">';
+        s_emergency += '<div style="font-size:13px;font-weight:700;color:#1565C0;margin-bottom:6px;">3. 设备故障应急处置</div>';
+        s_emergency += '<div style="font-size:13px;color:#555;line-height:1.7;">活动期间若音响、投影等设备出现故障，立即启用备用设备；如短时间内无法修复，由主持人灵活调整活动顺序，优先保障正常教学秩序；安排专人负责设备维护，提前做好设备调试与备用方案。</div></div>';
+        s_emergency += '<div style="border-left:4px solid #2E7D32;padding-left:14px;margin-bottom:12px;">';
+        s_emergency += '<div style="font-size:13px;font-weight:700;color:#2E7D32;margin-bottom:6px;">4. 恶劣天气应急处置</div>';
+        s_emergency += '<div style="font-size:13px;color:#555;line-height:1.7;">密切注意活动当天的天气预报；如遇恶劣天气（暴雨、大风、雷电等），由领导小组研判后决定是否延期或改换室内场地；已开始的活动中遇突发天气，迅速组织学生有序转移至安全区域，待天气好转后再行恢复。</div></div>';
+        s_emergency += '<div style="border-left:4px solid #7B1FA2;padding-left:14px;">';
+        s_emergency += '<div style="font-size:13px;font-weight:700;color:#7B1FA2;margin-bottom:6px;">5. 人员走失应急处置</div>';
+        s_emergency += '<div style="font-size:13px;color:#555;line-height:1.7;">发现学生走失后，立即通知各区域负责人协同寻找；安排专人到校门口守候，防止学生自行离校；如短时间内未找到，联系家长确认学生是否已自行回家，并及时向学校领导汇报。</div></div>';
+        
+        // 构建内容区
+        var allContent = {};
+        allContent['活动基本信息'] = { title: '一、活动基本信息', content: s_basic };
+        allContent['组织分工'] = { title: '二、组织分工', content: s_org };
+        allContent['活动流程'] = { title: '三、活动流程', content: s_flow };
+        allContent['物资清单'] = { title: '四、物资清单', content: s_materials };
+        allContent['安全保障'] = { title: '五、安全保障', content: s_safety };
+        allContent['应急预案'] = { title: '六、应急预案', content: s_emergency };
+        
+        p += '<div style="padding:22px 26px;font-size:14px;line-height:1.9;color:#444;">';
+        for (var idx = 0; idx < structs.length; idx++) {
+          var s = structs[idx];
+          if (allContent[s]) {
+            p += '<h2 style="font-size:15px;color:#1B5EA7;margin:20px 0 10px;font-weight:700;border-left:3px solid #1B5EA7;padding-left:8px;">' + allContent[s].title + '</h2>' + allContent[s].content;
+          } else {
+            p += '<h2 style="font-size:15px;color:#1B5EA7;margin:20px 0 10px;font-weight:700;border-left:3px solid #1B5EA7;padding-left:8px;">' + s + '</h2><p style="color:#888;font-size:13px;">（' + s + '具体内容可根据实际活动情况补充）</p>';
+          }
+        }
+        if (extra) {
+          p += '<h2 style="font-size:15px;color:#1B5EA7;margin:20px 0 10px;font-weight:700;border-left:3px solid #1B5EA7;padding-left:8px;">附：附加说明</h2><p style="font-size:13px;color:#555;line-height:1.8;">' + extra.replace(/\n/g, '<br>') + '</p>';
+        }
+        p += '</div></div></div>';
+        
+        // 保存数据并跳转
+        var data = { title: theme + ' - 活动策划方案', content: p };
+        sessionStorage.setItem('eventResult', JSON.stringify(data));
+        sessionStorage.setItem('eventFormData', JSON.stringify(formData));
+        
+        var resultWin = window.open('event-result.html', '_blank');
+        if (!resultWin) {
+          alert('请允许弹出窗口以查看结果');
+        }
+        
+        document.getElementById('gen').classList.remove('show');
+      } catch (err) {
+        alert('生成失败：' + err.message);
+        document.getElementById('gen').classList.remove('show');
+      }
+    }
+  </script>
+</body>
+</html>

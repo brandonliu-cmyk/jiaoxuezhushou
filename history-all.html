@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>历史生成记录 - 兆涵科技 Sigma Education</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background: #F0F4F8; min-height: 100vh; }
+
+    /* 顶部导航栏 */
+    .top-nav {
+      background: #fff;
+      box-shadow: 0 1px 4px rgba(0,0,0,.06);
+      padding: 0 32px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .nav-left { display: flex; align-items: center; gap: 10px; }
+    .nav-logo { font-size: 22px; }
+    .nav-brand { font-weight: 700; font-size: 15px; color: #1a1a2e; }
+    .nav-brand span { font-weight: 400; font-size: 12px; color: #888; margin-left: 4px; }
+    .nav-center { display: flex; gap: 28px; }
+    .nav-center a { color: #555; text-decoration: none; font-size: 14px; font-weight: 500; transition: color .2s; }
+    .nav-center a:hover, .nav-center a.active { color: #1B5EA7; }
+    .nav-right { display: flex; align-items: center; gap: 20px; }
+    .nav-right-item { font-size: 13px; color: #666; cursor: pointer; }
+    .quota-tag { background: #E8F4FD; color: #1B5EA7; padding: 4px 12px; border-radius: 16px; font-size: 12px; }
+    .avatar { width: 34px; height: 34px; background: linear-gradient(135deg, #1B5EA7, #0D47A1); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 16px; }
+
+    /* 面包屑 */
+    .page-header { background: #fff; border-bottom: 1px solid #E8EEF4; padding: 12px 32px; }
+    .breadcrumb { font-size: 13px; color: #888; }
+    .breadcrumb span { color: #1a1a2e; font-weight: 500; }
+
+    /* 主内容 */
+    .main-content {
+      max-width: 1200px;
+      margin: 32px auto;
+      padding: 0 32px;
+    }
+
+    /* 页面标题 */
+    .page-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: #1a1a2e;
+      margin-bottom: 8px;
+    }
+    .page-subtitle {
+      font-size: 14px;
+      color: #888;
+      margin-bottom: 32px;
+    }
+
+    /* 历史网格 */
+    .history-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+
+    /* 历史卡片 */
+    .history-card {
+      background: #fff;
+      border-radius: 12px;
+      border: 1.5px solid #E8EEF4;
+      cursor: pointer;
+      transition: all 0.25s;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .history-card:hover {
+      border-color: #1B5EA7;
+      box-shadow: 0 4px 16px rgba(27, 94, 167, 0.12);
+      transform: translateY(-2px);
+    }
+    .card-top {
+      padding: 16px 16px 12px;
+      flex: 1;
+    }
+    .card-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #1a1a2e;
+      margin-bottom: 8px;
+      line-height: 1.4;
+    }
+    .card-desc {
+      font-size: 12px;
+      color: #666;
+      line-height: 1.6;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+    .card-footer {
+      padding: 12px 16px;
+      border-top: 1px solid #F0F4F8;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .card-level { font-size: 12px; color: #888; }
+    .card-time { font-size: 12px; color: #aaa; margin-left: 8px; }
+    .card-del {
+      font-size: 12px;
+      color: #ccc;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 4px;
+      transition: all 0.2s;
+    }
+    .card-del:hover {
+      color: #E53935;
+      background: #FFF0F0;
+    }
+
+    /* 空状态 */
+    .history-empty {
+      text-align: center;
+      padding: 80px 32px;
+      color: #aaa;
+    }
+    .history-empty-icon { font-size: 48px; margin-bottom: 16px; }
+    .history-empty-text { font-size: 16px; margin-bottom: 24px; }
+    .history-empty-btn {
+      display: inline-block;
+      background: linear-gradient(135deg, #1B5EA7, #0D47A1);
+      color: #fff;
+      padding: 10px 24px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      transition: opacity 0.2s;
+    }
+    .history-empty-btn:hover { opacity: 0.9; }
+  </style>
+</head>
+<body>
+
+  <!-- 顶部导航栏 -->
+  <nav class="top-nav">
+    <div class="nav-left">
+      <div class="nav-logo">📋</div>
+      <div class="nav-brand">兆涵科技 <span>Sigma Education</span></div>
+    </div>
+    <div class="nav-center">
+      <a href="index.html">首页</a>
+      <a href="#">智能备课</a>
+      <a href="#">智能授课</a>
+      <a href="#">智能测评</a>
+      <a href="#" class="active">AI专区</a>
+    </div>
+    <div class="nav-right">
+      <div class="nav-right-item quota-tag">📊 可用额度：200次</div>
+      <div class="nav-right-item">📖 新手教程</div>
+      <div class="nav-right-item">🔔</div>
+      <div class="avatar">👩</div>
+    </div>
+  </nav>
+
+  <!-- 面包屑 -->
+  <div class="page-header">
+    <div class="breadcrumb">AI专区 / <a href="index.html" style="color:#888;text-decoration:none;">智能助手</a> / <span>历史生成记录</span></div>
+  </div>
+
+  <!-- 主内容 -->
+  <main class="main-content">
+    <div class="page-title">✦ 历史生成记录</div>
+    <div class="page-subtitle">查看您所有的AI生成记录，方便重复使用和编辑</div>
+
+    <div class="history-grid" id="historyGrid"></div>
+    <div class="history-empty" id="historyEmpty" style="display:none;">
+      <div class="history-empty-icon">📝</div>
+      <div class="history-empty-text">暂无历史生成记录</div>
+      <a href="index.html" class="history-empty-btn">去生成内容 →</a>
+    </div>
+  </main>
+
+  <script>
+    var HISTORY_KEY = 'teaching_helper_history';
+
+    function getHistory() {
+      try { return JSON.parse(localStorage.getItem(HISTORY_KEY)) || []; }
+      catch (e) { return []; }
+    }
+
+    function saveHistory(list) {
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(list));
+    }
+
+    function delHistory(id) {
+      var list = getHistory().filter(function(item) { return item.id !== id; });
+      saveHistory(list);
+      renderHistory();
+    }
+
+    function renderHistory() {
+      var list = getHistory();
+      var grid = document.getElementById('historyGrid');
+      var emptyEl = document.getElementById('historyEmpty');
+      
+      if (list.length === 0) {
+        grid.style.display = 'none';
+        emptyEl.style.display = 'block';
+        return;
+      }
+      
+      grid.style.display = 'grid';
+      emptyEl.style.display = 'none';
+      grid.innerHTML = '';
+      
+      list.forEach(function(item) {
+        var typeIcon = item.type === 'plan' ? '📋' : item.type === 'event' ? '🎉' : '🎤';
+        var typeLabel = item.type === 'plan' ? '教学计划' : item.type === 'event' ? '校园活动' : '家长会';
+        
+        var card = document.createElement('div');
+        card.className = 'history-card';
+        card.innerHTML =
+          '<div class="card-top">' +
+            '<div class="card-title">' + typeIcon + ' ' + item.title + '</div>' +
+            '<div class="card-desc">' + item.desc + '</div>' +
+          '</div>' +
+          '<div class="card-footer">' +
+            '<div>' +
+              '<span class="card-level">' + typeLabel + '</span>' +
+              '<span class="card-time">' + item.time + '</span>' +
+            '</div>' +
+            '<span class="card-del" onclick="event.stopPropagation();delHistory(' + item.id + ')">✕ 删除</span>' +
+          '</div>';
+        card.onclick = function() { replayHistory(item); };
+        grid.appendChild(card);
+      });
+    }
+
+    function replayHistory(item) {
+      var typeMap = { plan: { icon: '📋', label: '教学计划', color: '#1B5EA7' }, event: { icon: '🎉', label: '校园活动', color: '#E65100' }, speech: { icon: '🎤', label: '家长会发言', color: '#7B1FA2' } };
+      var info = typeMap[item.type] || typeMap.plan;
+
+      var bodyHtml;
+      // 检查是否有完整的生成内容（HTML格式，包含<h2>标签）
+      if (item.content && item.content.indexOf('<h2>') !== -1) {
+        // 有完整内容，直接使用
+        bodyHtml = item.content + '<p style="color:#aaa;font-size:12px;margin-top:24px;border-top:1px dashed #ddd;padding-top:12px;">* 此为历史记录</p>';
+      } else if (item.type === 'plan') {
+        bodyHtml = '<h2>一、指导思想</h2><p>本计划依据《义务教育' + (item.content.match(/([^\n]{1,6})(年级|学段)/) || ['',''])[0] + '课程标准（2022年版）》及学校教学要求制定，以立德树人为根本任务，以核心素养为导向，注重知识与能力、过程与方法、情感态度与价值观的有机统一，致力于培养学生的核心素养，促进学生全面而有个性地发展。</p><h2>二、学情分析</h2><p>' + (item.content.match(/班级[^。\n]*学生[^。\n]*[。\n]?/g) || ['学生基本情况详见原始输入描述'])[0] + ' 针对不同层次的学生，教师应采取分层教学策略，确保每位学生都能在原有基础上获得进步。</p><h2>三、教学目标</h2><p>依据课程标准，结合学生实际，制定本学期教学目标如下：</p><ul><li>知识与技能目标：掌握本学期核心知识点与基本技能，形成完整的知识体系</li><li>过程与方法目标：通过自主探究、合作学习等方式，培养学科思维和解决问题的能力</li><li>情感态度与价值观目标：激发学生对学科学习的兴趣，养成严谨求实的学习态度</li></ul><h2>四、教学重难点</h2><p>教学重点：核心概念的深度理解与灵活运用，基础技能的熟练掌握与迁移应用</p><p>教学难点：综合性、开放性问题的分析思路与方法，学科核心素养的落地实践</p><h2>五、教学进度安排</h2><ul><li>第1-3周：第1单元内容学习与入学适应性教育</li><li>第4-6周：第2-3单元内容学习与阶段性巩固</li><li>第7-9周：第4-5单元内容学习与期中复习</li><li>第10周：期中质量检测与教学反思</li><li>第11-13周：第6-7单元内容学习</li><li>第14-16周：第8单元内容学习与期末系统复习</li><li>第17-20周：期末复习整理与质量检测</li></ul><h2>六、培优补差措施</h2><p>针对学生个体差异，实施个性化培养策略：培优措施对学有余力的学生提供拓展性学习资源；补差措施对学习困难学生给予更多关注与支持，加强基础知识的巩固与基本技能的训练。</p><h2>七、家校共育</h2><p>建立有效的家校沟通机制，通过家长群、家长会、家访等形式，定期向家长反馈学生学习情况，形成教育合力。</p><p style="color:#aaa;font-size:12px;margin-top:24px;border-top:1px dashed #ddd;padding-top:12px;">* 此为历史记录，原始输入内容：' + item.content.substring(0, 120) + (item.content.length > 120 ? '...' : '') + '</p>';
+      } else if (item.type === 'event') {
+        bodyHtml = '<h2>一、活动基本信息</h2><p>活动主题：' + (item.content.match(/[^，。\n]{2,20}(活动|策划|节|会|运动会|晚会)/) || [item.title])[0] + '</p><p>活动对象：' + (item.content.match(/面向[^，,]*学生|小学部[^，,]*|全校[^，,]*|初中[^，,]*|全段[^，,]*|全体[^，,]*生/) || ['全体学生'])[0] + '</p><p>时间与规模：' + (item.content.match(/\d{2,4}年\d{1,2}月\d{1,2}[日]?[~到至]\d{1,2}月\d{1,2}[日]?/) || ['待定']) + '</p><p>活动形式：' + (item.content.match(/[^\n]{1,20}(汇演|比赛|展示|教育|实践)/) || ['待定']) + '</p><h2>二、活动目标</h2><p>' + (item.content.match(/培养[^，。\n]{5,30}/) || ['通过本次活动，激发学生兴趣，培养综合素养'])[0] + '</p><h2>三、组织分工</h2><p>成立活动筹备小组，由学校领导担任组长，德育主任担任副组长，负责活动整体统筹；各年级组长负责本年级活动的具体落实；班主任负责学生动员与安全管理；总务处负责物资采购与场地保障。</p><h2>四、活动流程</h2><ul><li><strong>前期准备（活动前2周）：</strong>确定活动主题与方案，成立筹备小组；完成活动申报与审批；准备活动所需物资与设备</li><li><strong>活动当天：</strong>参加人员签到入场，活动正式开始，依次开展各环节，活动结束，合影留念</li><li><strong>后期收尾（活动后1周）：</strong>活动总结与资料归档，评选表彰，撰写通讯稿</li></ul><h2>五、安全保障</h2><p>活动前对场地进行全面安全检查；各班班主任全程随班负责；提前与校医室沟通，配备专业医护人员值守；制定突发情况应急预案。</p><p style="color:#aaa;font-size:12px;margin-top:24px;border-top:1px dashed #ddd;padding-top:12px;">* 此为历史记录，原始输入内容：' + item.content.substring(0, 120) + (item.content.length > 120 ? '...' : '') + '</p>';
+      } else {
+        bodyHtml = '<h2>' + item.title + '</h2>' + item.content.split(/[,。；\n]/).slice(0, 8).map(function(s) {
+          return '<p>' + s.trim() + '。</p>';
+        }).join('') + '<p style="color:#aaa;font-size:12px;margin-top:24px;border-top:1px dashed #ddd;padding-top:12px;">* 此为历史记录，原始输入内容：' + item.content.substring(0, 120) + (item.content.length > 120 ? '...' : '') + '</p>';
+      }
+
+      var overlay = document.createElement('div');
+      overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;';
+      overlay.innerHTML =
+        '<div style="background:#fff;border-radius:16px;max-width:900px;width:100%;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 8px 40px rgba(0,0,0,.2);">' +
+          '<div style="background:linear-gradient(135deg,' + info.color + ',#0D47A1);color:#fff;padding:18px 24px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;">' +
+            '<div>' +
+              '<div style="font-size:14px;font-weight:600;">' + info.icon + ' ' + item.title + '</div>' +
+              '<div style="font-size:11px;opacity:0.8;margin-top:2px;">历史记录 · ' + item.time + '</div>' +
+            '</div>' +
+            '<div style="display:flex;gap:8px;align-items:center;">' +
+              '<button id="histDownloadBtn" style="background:rgba(255,255,255,.9);border:none;color:#1B5EA7;padding:6px 14px;border-radius:8px;font-size:12px;cursor:pointer;font-weight:600;">⬇ 下载</button>' +
+              '<button id="histCopyBtn" style="background:rgba(255,255,255,.9);border:none;color:#1B5EA7;padding:6px 14px;border-radius:8px;font-size:12px;cursor:pointer;font-weight:600;">📋 复制内容</button>' +
+              '<button id="histCloseBtn" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:#fff;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;">关闭</button>' +
+            '</div>' +
+          '</div>' +
+          '<div id="histBody" style="flex:1;overflow-y:auto;padding:28px 32px;font-size:14px;line-height:2;color:#444;"></div>' +
+        '</div>';
+      overlay.addEventListener('click', function(e) { if (e.target === overlay) overlay.remove(); });
+      document.body.appendChild(overlay);
+
+      var bodyEl = overlay.querySelector('#histBody');
+      bodyEl.innerHTML = bodyHtml;
+
+      overlay.querySelector('#histDownloadBtn').onclick = function() {
+        var filename = item.title + '.txt';
+        var content = bodyEl.innerText;
+        var blob = new Blob([String.fromCharCode(0xFEFF) + content], { type: 'text/plain;charset=utf-8' });
+        var link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = filename;
+        link.click();
+        var b = overlay.querySelector('#histDownloadBtn');
+        b.textContent = '✅ 已下载';
+        setTimeout(function() { b.textContent = '⬇ 下载'; }, 1500);
+      };
+
+      overlay.querySelector('#histCopyBtn').onclick = function() {
+        navigator.clipboard.writeText(bodyEl.innerText).then(function() {
+          var b = overlay.querySelector('#histCopyBtn');
+          b.textContent = '✅ 已复制';
+          setTimeout(function() { b.textContent = '📋 复制内容'; }, 1500);
+        });
+      };
+      overlay.querySelector('#histCloseBtn').onclick = function() { overlay.remove(); };
+
+      // 添加 h2 样式以匹配历史记录弹窗
+      bodyEl.querySelectorAll('h2').forEach(function(h2) {
+        h2.style.cssText = 'font-size:15px;color:#1B5EA7;margin:18px 0 8px;font-weight:700;border-left:3px solid #1B5EA7;padding-left:8px;';
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', renderHistory);
+  </script>
+</body>
+</html>

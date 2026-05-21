@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>家长会发言稿 - 兆涵科技</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: "Microsoft YaHei","PingFang SC",sans-serif; background: #F0F4F8; color: #333; min-height: 100vh; }
+    
+    .back-btn { position: fixed; left: 20px; top: 16px; background: #fff; border: 1.5px solid #D8E2EE; color: #1B5EA7; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,.1); transition: all .2s; z-index: 100; }
+    .back-btn:hover { background: #1B5EA7; color: #fff; border-color: #1B5EA7; }
+    .back-btn svg { width: 18px; height: 18px; }
+    
+    .top-bar { background: #1B5EA7; color: #fff; padding: 0 40px; height: 56px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 8px rgba(0,0,0,.15); position: sticky; top: 0; z-index: 10; }
+    .top-bar-left { display: flex; align-items: center; gap: 10px; }
+    .top-bar-title { font-size: 16px; font-weight: 600; }
+    .top-bar-badge { background: rgba(255,255,255,.2); font-size: 12px; padding: 3px 12px; border-radius: 20px; }
+    .top-bar-actions { display: flex; gap: 8px; }
+    
+    .btn-action { background: rgba(255,255,255,.2); border: 1px solid rgba(255,255,255,.4); color: #fff; padding: 6px 14px; border-radius: 6px; font-size: 13px; cursor: pointer; transition: all .2s; display: flex; align-items: center; gap: 4px; }
+    .btn-action:hover { background: rgba(255,255,255,.3); }
+    .btn-action.copy { background: rgba(255,255,255,.9); color: #1B5EA7; border-color: rgba(200,200,200,.4); }
+    .btn-action.copy:hover { background: #fff; }
+    
+    .container { max-width: 900px; margin: 24px auto 60px; padding: 0 20px; }
+    .result-card { background: #fff; border-radius: 16px; border: 1.5px solid #E8EEF4; overflow: hidden; box-shadow: 0 2px 12px rgba(27,94,167,.06); }
+    
+    .result-body { padding: 28px 32px; font-size: 15px; line-height: 2; color: #444; }
+    .result-body h2 { font-size: 17px; color: #1B5EA7; margin: 24px 0 12px; font-weight: 700; border-left: 4px solid #1B5EA7; padding-left: 12px; }
+    .result-body p { margin-bottom: 12px; }
+    .result-body ul { padding-left: 24px; margin-bottom: 12px; }
+    .result-body li { margin-bottom: 4px; }
+    
+    .loading { display: none; position: fixed; inset: 0; background: rgba(255,255,255,.95); z-index: 999; align-items: center; justify-content: center; flex-direction: column; gap: 16px; }
+    .loading.show { display: flex; }
+    .spinner { width: 44px; height: 44px; border: 4px solid #D8E2EE; border-top-color: #1B5EA7; border-radius: 50%; animation: spin .8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-text { font-size: 15px; color: #555; font-weight: 500; }
+    
+    .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px); background: #1B5EA7; color: #fff; padding: 12px 24px; border-radius: 8px; font-size: 14px; opacity: 0; transition: all .3s; z-index: 1000; }
+    .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+  </style>
+</head>
+<body>
+  <!-- 左侧返回按钮 -->
+  <button class="back-btn" onclick="goBack()" title="返回上一页">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M15 18l-6-6 6-6"/>
+    </svg>
+  </button>
+  
+  <div class="top-bar">
+    <div class="top-bar-left">
+      <span class="top-bar-title" id="pageTitle">🎤 家长会发言稿</span>
+      <span class="top-bar-badge">AI 生成</span>
+    </div>
+    <div class="top-bar-actions">
+      <button class="btn-action" onclick="reGen()">🔄 重新生成</button>
+      <button class="btn-action" onclick="downloadDoc()">⬇ 下载</button>
+      <button class="btn-action" onclick="newPlan()">➕ 新建</button>
+      <button class="btn-action copy" onclick="copyResult()">📋 复制内容</button>
+    </div>
+  </div>
+  
+  <div class="container">
+    <div class="result-card">
+      <div class="result-body" id="resultBody">
+        <p style="text-align:center;color:#999;padding:40px;">正在加载内容...</p>
+      </div>
+    </div>
+  </div>
+  
+  <div class="loading" id="loadingOverlay">
+    <div class="spinner"></div>
+    <div class="loading-text">正在生成家长会发言稿，请稍候...</div>
+  </div>
+  
+  <div class="toast" id="toast">已复制到剪贴板</div>
+  
+  <script>
+    // 从sessionStorage获取父窗口传递的数据
+    var dataStr = sessionStorage.getItem("speechResult");
+    
+    // 如果有父窗口传递的数据，填充内容
+    if (dataStr) {
+      try {
+        var data = JSON.parse(dataStr);
+        sessionStorage.removeItem("speechResult");
+        if (data.title) document.getElementById('pageTitle').textContent = '🎤 ' + data.title;
+        if (data.content) {
+          streamContent(data.content);
+        } else {
+          document.getElementById('resultBody').innerHTML = '<p style="text-align:center;color:#999;padding:40px;">正在加载内容...</p>';
+        }
+      } catch(e) {
+        console.error('解析数据失败:', e);
+        document.getElementById('resultBody').innerHTML = '<p style="text-align:center;color:#E53935;padding:40px;">数据解析失败，请返回重试<br><button onclick="goBack()" style="margin-top:10px;padding:8px 16px;background:#1B5EA7;color:#fff;border:none;border-radius:6px;cursor:pointer;">返回</button></p>';
+      }
+    } else {
+      document.getElementById('resultBody').innerHTML = '<p style="text-align:center;color:#999;padding:40px;">未获取到数据，请返回重试<br><button onclick="goBack()" style="margin-top:10px;padding:8px 16px;background:#1B5EA7;color:#fff;border:none;border-radius:6px;cursor:pointer;">返回</button></p>';
+    }
+    
+    // 流式输出函数
+    function streamContent(fullHTML) {
+      var resultBody = document.getElementById('resultBody');
+      
+      // 临时容器解析HTML，提取纯文本用于计算
+      var tempDiv = document.createElement('div');
+      tempDiv.innerHTML = fullHTML;
+      var fullText = tempDiv.textContent || tempDiv.innerText;
+      
+      // 计算速度：10秒显示全部内容
+      var totalChars = fullText.length;
+      var targetDuration = 10000; // 10秒
+      var charDelay = Math.max(20, Math.min(80, targetDuration / totalChars));
+      
+      // 初始显示
+      resultBody.innerHTML = '<div style="text-align:center;padding:20px;color:#1B5EA7;">✍️ 正在生成...</div>';
+      
+      // 创建临时div用于逐字符追加
+      var streamDiv = document.createElement('div');
+      streamDiv.style.lineHeight = '1.9';
+      resultBody.appendChild(streamDiv);
+      
+      // 逐字符显示
+      var charIndex = 0;
+      var currentText = '';
+      var streamInterval = null;
+      
+      streamInterval = setInterval(function() {
+        if (charIndex < totalChars) {
+          currentText += fullText[charIndex];
+          streamDiv.textContent = currentText;
+          charIndex++;
+        } else {
+          clearInterval(streamInterval);
+          // 显示最终完整HTML
+          resultBody.innerHTML = fullHTML;
+        }
+      }, charDelay);
+      
+      // 处理页面关闭时清除定时器
+      window.addEventListener('beforeunload', function() {
+        if (streamInterval) clearInterval(streamInterval);
+      });
+    }
+    
+    // 复制内容
+    function copyResult() {
+      var text = document.getElementById('resultBody').innerText;
+      navigator.clipboard.writeText(text).then(function() {
+        showToast('已复制到剪贴板');
+      }).catch(function() {
+        var textarea = document.createElement('textarea');
+        textarea.value = text;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        showToast('已复制到剪贴板');
+      });
+    }
+    
+    // 下载文档
+    function downloadDoc() {
+      var title = document.getElementById('pageTitle').textContent.replace('🎤 ', '');
+      var content = document.getElementById('resultBody').innerText;
+      var filename = title + '.txt';
+      var blob = new Blob([String.fromCharCode(0xFEFF) + content], {type: 'text/plain;charset=utf-8'});
+      var link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = filename;
+      link.click();
+    }
+    
+    // 返回上一页
+    function goBack() {
+      var formDataStr = sessionStorage.getItem("speechFormData");
+      if (formDataStr) {
+        try {
+          var params = JSON.parse(formDataStr);
+          sessionStorage.setItem("speechFormPreData", JSON.stringify({
+            grade: params.grade || '',
+            teacher: params.teacher || '',
+            theme: params.theme || '',
+            purpose: params.purpose || '',
+            classinfo: params.classinfo || '',
+            examples: params.examples || '',
+            subjects: params.subjects || '',
+            extra: params.extra || ''
+          }));
+        } catch(e) {}
+      }
+      window.location.href = 'speech-form.html';
+    }
+    
+    // 重新生成
+    function reGen() {
+      goBack();
+    }
+    
+    // 新建
+    function newPlan() {
+      if (confirm('确定要新建吗？当前内容将不会被保存。')) {
+        window.location.href = 'index.html';
+      }
+    }
+    
+    // 显示提示
+    function showToast(msg) {
+      var toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(function() {
+        toast.classList.remove('show');
+      }, 2000);
+    }
+  </script>
+</body>
+</html>

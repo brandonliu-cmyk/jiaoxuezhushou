@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>教学工作计划模板 - 兆涵科技 Sigma Education</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background: #F0F4F8; min-height: 100vh; }
+
+    /* 顶部导航栏 */
+    .top-nav {
+      background: #fff;
+      box-shadow: 0 1px 4px rgba(0,0,0,.06);
+      padding: 0 32px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .nav-left { display: flex; align-items: center; gap: 10px; }
+    .nav-logo { font-size: 22px; }
+    .nav-brand { font-weight: 700; font-size: 15px; color: #1a1a2e; }
+    .nav-brand span { font-weight: 400; font-size: 12px; color: #888; margin-left: 4px; }
+    .nav-center { display: flex; gap: 28px; }
+    .nav-center a { color: #555; text-decoration: none; font-size: 14px; font-weight: 500; transition: color .2s; }
+    .nav-center a:hover, .nav-center a.active { color: #1B5EA7; }
+    .nav-right { display: flex; align-items: center; gap: 20px; }
+    .nav-right-item { font-size: 13px; color: #666; cursor: pointer; }
+    .quota-tag { background: #E8F4FD; color: #1B5EA7; padding: 4px 12px; border-radius: 16px; font-size: 12px; }
+    .avatar { width: 34px; height: 34px; background: linear-gradient(135deg, #1B5EA7, #0D47A1); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 16px; }
+
+    /* 面包屑 */
+    .page-header { background: #fff; border-bottom: 1px solid #E8EEF4; padding: 12px 32px; }
+    .breadcrumb { font-size: 13px; color: #888; }
+    .breadcrumb span { color: #1a1a2e; font-weight: 500; }
+
+    /* 主内容 */
+    .main-content {
+      max-width: 1200px;
+      margin: 32px auto;
+      padding: 0 32px;
+    }
+
+    /* 页面标题 */
+    .page-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: #1a1a2e;
+      margin-bottom: 8px;
+    }
+    .page-subtitle {
+      font-size: 14px;
+      color: #888;
+      margin-bottom: 32px;
+    }
+
+    /* 模板网格 */
+    .template-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+
+    /* 内容卡片 */
+    .template-card {
+      background: #fff;
+      border-radius: 12px;
+      border: 1.5px solid #E8EEF4;
+      cursor: pointer;
+      transition: all 0.25s;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .template-card:hover {
+      border-color: #1B5EA7;
+      box-shadow: 0 4px 16px rgba(27, 94, 167, 0.12);
+      transform: translateY(-2px);
+    }
+    .card-top {
+      padding: 16px 16px 12px;
+      flex: 1;
+    }
+    .card-meta { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
+    .card-badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: #FFF3E0;
+      color: #E65100;
+    }
+    .card-badge.blue { background: #E3F2FD; color: #1565C0; }
+    .card-badge.purple { background: #F3E5F5; color: #7B1FA2; }
+    .card-badge.green { background: #E8F5E9; color: #2E7D32; }
+    .card-badge.orange { background: #FFF3E0; color: #EF6C00; }
+    .card-badge.teal { background: #E0F2F1; color: #00796B; }
+    .card-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #1a1a2e;
+      margin-bottom: 8px;
+      line-height: 1.4;
+    }
+    .card-desc {
+      font-size: 12px;
+      color: #666;
+      line-height: 1.6;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+    .card-footer {
+      padding: 12px 16px;
+      border-top: 1px solid #F0F4F8;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .card-level { font-size: 12px; color: #888; }
+    .card-use-btn {
+      font-size: 12px;
+      color: #1B5EA7;
+      font-weight: 500;
+      transition: color .2s;
+    }
+    .template-card:hover .card-use-btn { color: #0D47A1; }
+  </style>
+</head>
+<body>
+
+  <!-- 顶部导航栏 -->
+  <nav class="top-nav">
+    <div class="nav-left">
+      <div class="nav-logo">📋</div>
+      <div class="nav-brand">兆涵科技 <span>Sigma Education</span></div>
+    </div>
+    <div class="nav-center">
+      <a href="index.html">首页</a>
+      <a href="#">智能备课</a>
+      <a href="#">智能授课</a>
+      <a href="#">智能测评</a>
+      <a href="#" class="active">AI专区</a>
+    </div>
+    <div class="nav-right">
+      <div class="nav-right-item quota-tag">📊 可用额度：200次</div>
+      <div class="nav-right-item">📖 新手教程</div>
+      <div class="nav-right-item">🔔</div>
+      <div class="avatar">👩</div>
+    </div>
+  </nav>
+
+  <!-- 面包屑 -->
+  <div class="page-header">
+    <div class="breadcrumb">AI专区 / <a href="index.html" style="color:#888;text-decoration:none;">智能助手</a> / <span>教学工作计划模板</span></div>
+  </div>
+
+  <!-- 主内容 -->
+  <main class="main-content">
+    <div class="page-title">📋 教学工作计划模板</div>
+    <div class="page-subtitle">精选优质教学工作计划模板，助您高效完成教学规划</div>
+
+    <div class="template-grid">
+      <!-- 教学工作计划模板 -->
+      <div class="template-card" onclick="useTemplate('plan1')">
+        <div class="card-top">
+          <div class="card-meta">
+            <span class="card-badge blue">🔥 热门精选</span>
+          </div>
+          <div class="card-title">小学一年级语文上学期教学工作计划</div>
+          <div class="card-desc">适用于小学一年级语文教学，包含拼音教学、识字教学、阅读启蒙等详细安排与阶段目标。</div>
+        </div>
+        <div class="card-footer">
+          <span class="card-level">小学 · 语文</span>
+          <span class="card-use-btn">立即使用 →</span>
+        </div>
+      </div>
+
+      <div class="template-card" onclick="useTemplate('plan2')">
+        <div class="card-top">
+          <div class="card-meta">
+            <span class="card-badge purple">⭐ 编辑推荐</span>
+          </div>
+          <div class="card-title">小学三年级数学上学期教学工作计划</div>
+          <div class="card-desc">适用于小学三年级数学教学，包含分数初步认识、测量、位置与方向等内容的分阶段教学安排。</div>
+        </div>
+        <div class="card-footer">
+          <span class="card-level">小学 · 数学</span>
+          <span class="card-use-btn">立即使用 →</span>
+        </div>
+      </div>
+
+      <div class="template-card" onclick="useTemplate('plan3')">
+        <div class="card-top">
+          <div class="card-meta">
+            <span class="card-badge green">✨ 精品模板</span>
+          </div>
+          <div class="card-title">初中七年级英语上学期教学工作计划</div>
+          <div class="card-desc">适用于初中七年级英语起始阶段，包含音标教学、基础词汇、日常交际用语的系统教学规划。</div>
+        </div>
+        <div class="card-footer">
+          <span class="card-level">初中 · 英语</span>
+          <span class="card-use-btn">立即使用 →</span>
+        </div>
+      </div>
+
+      <div class="template-card" onclick="useTemplate('plan4')">
+        <div class="card-top">
+          <div class="card-meta">
+            <span class="card-badge">🔥 热门精选</span>
+          </div>
+          <div class="card-title">小学二年级数学下学期教学工作计划</div>
+          <div class="card-desc">适用于小学二年级数学下学期教学，包含表内除法、图形认识、数据收集整理等内容的教学安排。</div>
+        </div>
+        <div class="card-footer">
+          <span class="card-level">小学 · 数学</span>
+          <span class="card-use-btn">立即使用 →</span>
+        </div>
+      </div>
+
+      <div class="template-card" onclick="useTemplate('plan5')">
+        <div class="card-top">
+          <div class="card-meta">
+            <span class="card-badge purple">⭐ 编辑推荐</span>
+          </div>
+          <div class="card-title">初中八年级物理上学期教学工作计划</div>
+          <div class="card-desc">适用于初中八年级物理起始阶段，包含机械运动、声现象、物态变化等内容的系统教学规划。</div>
+        </div>
+        <div class="card-footer">
+          <span class="card-level">初中 · 物理</span>
+          <span class="card-use-btn">立即使用 →</span>
+        </div>
+      </div>
+
+      <div class="template-card" onclick="useTemplate('plan6')">
+        <div class="card-top">
+          <div class="card-meta">
+            <span class="card-badge green">✨ 精品模板</span>
+          </div>
+          <div class="card-title">小学五年级英语上学期教学工作计划</div>
+          <div class="card-desc">适用于小学五年级英语教学，包含核心句型、阅读理解、写作训练等内容的分层教学安排。</div>
+        </div>
+        <div class="card-footer">
+          <span class="card-level">小学 · 英语</span>
+          <span class="card-use-btn">立即使用 →</span>
+        </div>
+      </div>
+
+      <div class="template-card" onclick="useTemplate('plan7')">
+        <div class="card-top">
+          <div class="card-meta">
+            <span class="card-badge blue">🔥 热门精选</span>
+          </div>
+          <div class="card-title">高中一年级数学上学期教学工作计划</div>
+          <div class="card-desc">适用于高中一年级数学教学，包含集合、函数、基本初等函数等高一数学核心内容的系统规划。</div>
+        </div>
+        <div class="card-footer">
+          <span class="card-level">高中 · 数学</span>
+          <span class="card-use-btn">立即使用 →</span>
+        </div>
+      </div>
+
+      <div class="template-card" onclick="useTemplate('plan8')">
+        <div class="card-top">
+          <div class="card-meta">
+            <span class="card-badge orange">⭐ 编辑推荐</span>
+          </div>
+          <div class="card-title">初中九年级化学上学期教学工作计划</div>
+          <div class="card-desc">适用于初中九年级化学起始阶段，包含化学入门、物质构成、化学反应等基础内容的教学规划。</div>
+        </div>
+        <div class="card-footer">
+          <span class="card-level">初中 · 化学</span>
+          <span class="card-use-btn">立即使用 →</span>
+        </div>
+      </div>
+
+      <div class="template-card" onclick="useTemplate('plan9')">
+        <div class="card-top">
+          <div class="card-meta">
+            <span class="card-badge teal">✨ 精品模板</span>
+          </div>
+          <div class="card-title">小学四年级科学上学期教学工作计划</div>
+          <div class="card-desc">适用于小学四年级科学教学，包含溶解、声音、呼吸消化等生命科学和物质科学内容的探究活动安排。</div>
+        </div>
+        <div class="card-footer">
+          <span class="card-level">小学 · 科学</span>
+          <span class="card-use-btn">立即使用 →</span>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    function useTemplate(type) {
+      window.location.href = 'index.html?template=' + type;
+    }
+  </script>
+</body>
+</html>
