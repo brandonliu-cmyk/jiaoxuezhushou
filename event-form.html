@@ -165,12 +165,19 @@
   </div>
   
   <script>
+    // 存储历史记录ID（用于生成后更新父窗口）
+    var currentHistoryId = null;
+    
     // 从sessionStorage获取预填数据
     var preData = null;
     try {
       preData = JSON.parse(sessionStorage.getItem('eventFormPreData') || 'null');
       if (preData) {
-        sessionStorage.removeItem('eventFormPreData');
+        // 保存历史记录ID
+        currentHistoryId = preData.historyId || null;
+        // 清除历史记录ID，只保留表单数据
+        delete preData.historyId;
+        sessionStorage.setItem('eventFormPreData', JSON.stringify(preData));
         // 填充表单
         if (preData.theme) document.getElementById('f-theme').value = preData.theme;
         if (preData.target) document.getElementById('f-target').value = preData.target;
@@ -355,6 +362,11 @@
         var data = { title: theme + ' - 活动策划方案', content: p };
         sessionStorage.setItem('eventResult', JSON.stringify(data));
         sessionStorage.setItem('eventFormData', JSON.stringify(formData));
+        
+        // 更新父窗口历史记录
+        if (currentHistoryId && window.opener && window.opener.updateHistoryContent) {
+          window.opener.updateHistoryContent(currentHistoryId, p);
+        }
         
         var resultWin = window.open('event-result.html', '_blank');
         if (!resultWin) {

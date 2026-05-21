@@ -1608,13 +1608,19 @@
           setTimeout(function() {
             document.getElementById('generating').classList.remove('show');
             var parsed = parsedEvent;
+            var historyId = addHistory(
+              (parsed.theme || '校园主题') + '活动策划方案',
+              rawText,
+              'event'
+            );
             sessionStorage.setItem('eventFormPreData', JSON.stringify({
               theme: parsed.theme || '',
               target: parsed.target || '',
               goals: parsed.goals || '',
               datetime: parsed.date || '',
               location: parsed.location || '',
-              extra: ''
+              extra: '',
+              historyId: historyId
             }));
             var formWin = window.open('event-form.html', '_blank');
             if (!formWin) {
@@ -1642,26 +1648,32 @@
             newWindow3.document.write(loadingHTML3);
             newWindow3.document.close();
             document.getElementById('generating').classList.add('show');
-            setTimeout(function() {
-              document.getElementById('generating').classList.remove('show');
-              var parsed = parsedSpeech;
-              // 合并年级和学期
-              var gradeSemester = (parsed.grade || '三年级') + (parsed.semester === '下学期' ? '下学期' : '上学期');
-              sessionStorage.setItem('speechFormPreData', JSON.stringify({
-                grade: gradeSemester,
-                teacher: parsed.teacherName || '',
-                theme: parsed.meetingTheme || '',
-                purpose: parsed.purpose || '',
-                classinfo: parsed.classOverview || '',
-                examples: parsed.examples || '',
-                subjects: parsed.subjects || '',
-                extra: ''
-              }));
-              var formWin = window.open('speech-form.html', '_blank');
-              if (!formWin) {
-                alert('请允许弹出窗口后重试');
-              }
-            }, 1800);
+          setTimeout(function() {
+            document.getElementById('generating').classList.remove('show');
+            var parsed = parsedSpeech;
+            // 合并年级和学期
+            var gradeSemester = (parsed.grade || '三年级') + (parsed.semester === '下学期' ? '下学期' : '上学期');
+            var historyId = addHistory(
+              gradeSemester + (parsed.meetingTheme || '家长会') + '发言稿',
+              rawText,
+              'speech'
+            );
+            sessionStorage.setItem('speechFormPreData', JSON.stringify({
+              grade: gradeSemester,
+              teacher: parsed.teacherName || '',
+              theme: parsed.meetingTheme || '',
+              purpose: parsed.purpose || '',
+              classinfo: parsed.classOverview || '',
+              examples: parsed.examples || '',
+              subjects: parsed.subjects || '',
+              extra: '',
+              historyId: historyId
+            }));
+            var formWin = window.open('speech-form.html', '_blank');
+            if (!formWin) {
+              alert('请允许弹出窗口后重试');
+            }
+          }, 1800);
           } else {
             // 显示demo结果
             document.getElementById('generating').classList.add('show');

@@ -195,12 +195,19 @@
   </div>
   
   <script>
+    // 存储历史记录ID（用于生成后更新父窗口）
+    var currentHistoryId = null;
+    
     // 从sessionStorage获取预填数据
     var preData = null;
     try {
       preData = JSON.parse(sessionStorage.getItem('speechFormPreData') || 'null');
       if (preData) {
-        sessionStorage.removeItem('speechFormPreData');
+        // 保存历史记录ID
+        currentHistoryId = preData.historyId || null;
+        // 清除历史记录ID，只保留表单数据
+        delete preData.historyId;
+        sessionStorage.setItem('speechFormPreData', JSON.stringify(preData));
         // 填充表单
         if (preData.grade) {
           // 检查是否是合并的年级学期格式
@@ -442,6 +449,11 @@
         var data = { title: grade + semester + '家长会发言稿', content: contentHTML };
         sessionStorage.setItem('speechResult', JSON.stringify(data));
         sessionStorage.setItem('speechFormData', JSON.stringify(formData));
+        
+        // 更新父窗口历史记录
+        if (currentHistoryId && window.opener && window.opener.updateHistoryContent) {
+          window.opener.updateHistoryContent(currentHistoryId, contentHTML);
+        }
         
         var resultWin = window.open('speech-result.html', '_blank');
         if (!resultWin) {
