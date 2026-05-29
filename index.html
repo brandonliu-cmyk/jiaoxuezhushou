@@ -208,6 +208,16 @@
       box-shadow: 0 0 0 3px rgba(27, 94, 167, 0.1);
     }
 
+    .main-textarea.placeholder-hint {
+      color: #999;
+      font-style: italic;
+    }
+
+    .main-textarea.placeholder-hint:focus {
+      color: #333;
+      font-style: normal;
+    }
+
     /* ====== 标签 + 生成按钮 ====== */
     .input-footer {
       display: flex;
@@ -299,7 +309,12 @@
       justify-content: space-between;
     }
 
-    .result-copy {
+    .result-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .result-save, .result-edit {
       background: rgba(255, 255, 255, 0.2);
       border: 1px solid rgba(255, 255, 255, 0.4);
       color: #fff;
@@ -310,7 +325,7 @@
       transition: background 0.2s;
     }
 
-    .result-copy:hover {
+    .result-save:hover, .result-edit:hover {
       background: rgba(255, 255, 255, 0.35);
     }
 
@@ -325,7 +340,6 @@
 
     .result-body h2 {
       font-size: 16px;
-      color: #1B5EA7;
       margin: 14px 0 8px;
       font-weight: 700;
     }
@@ -546,40 +560,35 @@
       border-top: 1px solid #E8EEF4;
     }
 
-    /* ====== 加载动画 ====== */
-    .generating-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(255, 255, 255, 0.88);
-      z-index: 999;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-      gap: 16px;
-    }
-
-    .generating-overlay.show {
-      display: flex;
-    }
-
-    .spinner {
-      width: 44px;
-      height: 44px;
-      border: 4px solid #D8E2EE;
-      border-top-color: #1B5EA7;
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-    }
 
     @keyframes spin {
       to { transform: rotate(360deg); }
     }
 
-    .generating-text {
-      font-size: 15px;
-      color: #555;
-      font-weight: 500;
+    .generating-tips {
+      margin-top: 16px;
+      font-size: 13px;
+      color: #aaa;
+      max-width: 400px;
+      text-align: center;
+      line-height: 1.6;
+    }
+
+    .cancel-generate-btn {
+      margin-top: 20px;
+      padding: 8px 24px;
+      background: transparent;
+      border: 1.5px solid #D8E2EE;
+      border-radius: 8px;
+      font-size: 13px;
+      color: #888;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .cancel-generate-btn:hover {
+      border-color: #1B5EA7;
+      color: #1B5EA7;
     }
 
     /* ====== 历史生成记录 ====== */
@@ -687,6 +696,22 @@
       background: #FFF0F0;
     }
 
+    .history-card .card-generating {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: #FF9800;
+      color: #fff;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 10px;
+    }
+
+    .history-card {
+      position: relative;
+    }
+
     .history-empty {
       text-align: center;
       padding: 32px;
@@ -759,7 +784,10 @@
     <div class="result-card" id="resultCard">
       <div class="result-header">
         <span>✨ 生成结果</span>
-        <button class="result-copy" onclick="copyResult()">📋 复制内容</button>
+        <div class="result-actions">
+          <button class="result-save" onclick="saveResult()">💾 保存</button>
+          <button class="result-edit" onclick="editResult()">✏️ 编辑</button>
+        </div>
       </div>
       <div class="result-body" id="resultBody"></div>
     </div>
@@ -790,7 +818,7 @@
       <div class="template-panel active" id="tab-plan">
         <div class="panel-header">
           <span class="panel-title">📋 教学工作计划</span>
-          <span class="view-all-btn" onclick="location.href='templates-plan.html'">查看全部 →</span>
+          <span class="view-all-btn" onclick="location.href='templates-all.html'">查看全部 →</span>
         </div>
         <div class="template-grid">
           <div class="template-card" onclick="showTemplateDemo('plan1')">
@@ -839,7 +867,7 @@
       <div class="template-panel" id="tab-event">
         <div class="panel-header">
           <span class="panel-title">🎉 校园活动策划</span>
-          <span class="view-all-btn" onclick="location.href='templates-event.html'">查看全部 →</span>
+          <span class="view-all-btn" onclick="location.href='templates-all.html'">查看全部 →</span>
         </div>
         <div class="template-grid">
           <div class="template-card" onclick="showTemplateDemo('event1')">
@@ -888,7 +916,7 @@
       <div class="template-panel" id="tab-speech">
         <div class="panel-header">
           <span class="panel-title">🎤 家长会发言稿</span>
-          <span class="view-all-btn" onclick="location.href='templates-speech.html'">查看全部 →</span>
+          <span class="view-all-btn" onclick="location.href='templates-all.html'">查看全部 →</span>
         </div>
         <div class="template-grid">
           <div class="template-card" onclick="showTemplateDemo('speech1')">
@@ -942,19 +970,14 @@
     © 2025 兆涵科技 Sigma Education All Rights Reserved. Powered by AI
   </div>
 
-  <!-- 加载动画 -->
-  <div class="generating-overlay" id="generating">
-    <div class="spinner"></div>
-    <div class="generating-text">AI 正在为您生成教学文案，请稍候...</div>
-  </div>
 
   <script>
     // ====== 模板示例文本 ======
-    var planTemplate = "【示例输入】：\n我想写一份三年级语文上学期的教学工作计划。我们班42个孩子，大部分拼音基础还行，但阅读理解能力偏弱，课堂上积极发言的不多。教材用的是统编版2023，教参和配套练习册都有，多媒体教室也方便用。我希望这个学期重点抓阅读理解和看图写话，朗读和背诵也要加强。教学方法上想多尝试情景教学和小组合作。";
+    var planTemplate = "我想写一份三年级语文上学期的教学工作计划。我们班42个孩子，大部分拼音基础还行，但阅读理解能力偏弱，课堂上积极发言的不多。教材用的是统编版2023，教参和配套练习册都有，多媒体教室也方便用。我希望这个学期重点抓阅读理解和看图写话，朗读和背诵也要加强。教学方法上想多尝试情景教学和小组合作。";
 
-    var eventTemplate = "【示例输入】：\n我想策划一场元旦晚会，面向小学部全体学生，在12月31日下午2点，地点在学校大礼堂，规模是全校性的，邀请家长参与。想办成文艺汇演的形式，加上竞技比赛和作品展示环节，重点是激发学生的艺术兴趣、培养团队合作精神，预算控制在8000元以内。";
+    var eventTemplate = "我想策划一场元旦晚会，面向小学部全体学生，在12月31日下午2点，地点在学校大礼堂，规模是全校性的，邀请家长参与。想办成文艺汇演的形式，加上竞技比赛和作品展示环节，重点是激发学生的艺术兴趣、培养团队合作精神，预算控制在8000元以内。";
 
-    var speechTemplate = "【示例输入】：\n我是一年级二班的班主任王老师，要开期中考试后的家长会，班级共38人。整体来看班级学习氛围不错，大部分同学都很积极。本次家长会我想重点反馈孩子们的学习情况，特别是拼音认读和基础计算两块很多家长关心的内容，同时想分享几个进步明显的学生案例。也想收集一下家长们在辅导孩子学习时遇到的困惑，给出一些具体的学科教学计划安排和建议。";
+    var speechTemplate = "我是一年级二班的班主任王老师，要开期中考试后的家长会，班级共38人。整体来看班级学习氛围不错，大部分同学都很积极。本次家长会我想重点反馈孩子们的学习情况，特别是拼音认读和基础计算两块很多家长关心的内容，同时想分享几个进步明显的学生案例。也想收集一下家长们在辅导孩子学习时遇到的困惑，给出一些具体的学科教学计划安排和建议。";
 
     // ====== 选择标签 ======
     function selectTag(el, type) {
@@ -968,7 +991,38 @@
       } else if (type === '家长会发言稿') {
         input.value = speechTemplate;
       }
+      // 设置为提示状态（灰色）
+      input.classList.add('placeholder-hint');
+      // 输入时移除提示状态
+      input.addEventListener('input', function handler() {
+        input.classList.remove('placeholder-hint');
+        input.removeEventListener('input', handler);
+      });
+      // 聚焦时移除提示状态
+      input.addEventListener('focus', function() {
+        input.classList.remove('placeholder-hint');
+      });
     }
+
+    // ====== 主输入框提示状态 ======
+    document.addEventListener('DOMContentLoaded', function() {
+      var mainInput = document.getElementById('mainInput');
+      if (mainInput && mainInput.value === '') {
+        mainInput.classList.remove('placeholder-hint');
+      }
+      mainInput.addEventListener('blur', function() {
+        if (mainInput.value === '') {
+          mainInput.classList.add('placeholder-hint');
+        }
+      });
+      // 默认选中教学工作计划并填充示例内容
+      var firstTag = document.querySelector('.quick-tag');
+      if (firstTag) {
+        firstTag.classList.add('active');
+        mainInput.value = planTemplate;
+        mainInput.classList.add('placeholder-hint');
+      }
+    });
 
     // ====== 历史生成记录 ======
     var HISTORY_KEY = 'teaching_helper_history';
@@ -988,6 +1042,7 @@
       for (var i = 0; i < list.length; i++) {
         if (list[i].id === id) {
           list[i].content = newContent;
+          list[i].generating = false;
           break;
         }
       }
@@ -1001,7 +1056,8 @@
         title: title,
         desc: desc.length > 60 ? desc.substring(0, 60) + '...' : desc,
         type: type,
-        content: content || desc,
+        content: content || '',
+        generating: !content,
         time: new Date().toLocaleString('zh-CN', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })
       };
       list.unshift(item);
@@ -1029,10 +1085,13 @@
       displayList.forEach(function(item) {
         var typeIcon = item.type === 'plan' ? '📋' : item.type === 'event' ? '🎉' : '🎤';
         var typeLabel = item.type === 'plan' ? '教学计划' : item.type === 'event' ? '校园活动' : '家长会';
+        // 检查是否正在生成中
+        var isGenerating = item.generating === true;
+        var generatingBadge = isGenerating ? '<span class="card-generating">生成中</span>' : '';
         var card = document.createElement('div');
         card.className = 'history-card';
         card.innerHTML =
-          '<div class="card-top">' +
+          '<div class="card-top">' + generatingBadge +
             '<div class="card-title">' + typeIcon + ' ' + item.title + '</div>' +
             '<div class="card-desc">' + item.desc + '</div>' +
           '</div>' +
@@ -1043,7 +1102,15 @@
             '</div>' +
             '<span class="card-del" onclick="event.stopPropagation();delHistory(' + item.id + ')">✕ 删除</span>' +
           '</div>';
-        card.onclick = function() { replayHistory(item); };
+        card.onclick = function() { 
+          if (isGenerating) {
+            // 跳转到对应的生成页面
+            var pageMap = { plan: 'plan-result.html', event: 'event-result.html', speech: 'speech-result.html' };
+            window.location.href = pageMap[item.type] + '?id=' + item.id;
+          } else {
+            replayHistory(item);
+          }
+        };
         grid.appendChild(card);
       });
       if (viewAllBtn) {
@@ -1082,7 +1149,8 @@
             '</div>' +
             '<div style="display:flex;gap:8px;align-items:center;">' +
               '<button id="histDownloadBtn" style="background:rgba(255,255,255,.9);border:none;color:#1B5EA7;padding:6px 14px;border-radius:8px;font-size:12px;cursor:pointer;font-weight:600;">⬇ 下载</button>' +
-              '<button id="histCopyBtn" style="background:rgba(255,255,255,.9);border:none;color:#1B5EA7;padding:6px 14px;border-radius:8px;font-size:12px;cursor:pointer;font-weight:600;">📋 复制内容</button>' +
+              '<button id="histSaveBtn" style="background:rgba(255,255,255,.9);border:none;color:#1B5EA7;padding:6px 14px;border-radius:8px;font-size:12px;cursor:pointer;font-weight:600;">💾 保存</button>' +
+              '<button id="histEditBtn" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:#fff;padding:6px 14px;border-radius:8px;font-size:12px;cursor:pointer;">✏️ 编辑</button>' +
               '<button id="histCloseBtn" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:#fff;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;">关闭</button>' +
             '</div>' +
           '</div>' +
@@ -1107,12 +1175,44 @@
         setTimeout(function() { b.textContent = '⬇ 下载'; }, 1500);
       };
 
-      overlay.querySelector('#histCopyBtn').onclick = function() {
-        navigator.clipboard.writeText(bodyEl.innerText).then(function() {
-          var b = overlay.querySelector('#histCopyBtn');
-          b.textContent = '✅ 已复制';
-          setTimeout(function() { b.textContent = '📋 复制内容'; }, 1500);
-        });
+      overlay.querySelector('#histSaveBtn').onclick = function() {
+        var filename = item.title + '.txt';
+        var content = bodyEl.innerText;
+        var blob = new Blob([String.fromCharCode(0xFEFF) + content], { type: 'text/plain;charset=utf-8' });
+        var link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        var now = new Date();
+        var dateStr = now.getFullYear() + String(now.getMonth() + 1).padStart(2, '0') + String(now.getDate()).padStart(2, '0');
+        link.download = item.title + '_' + dateStr + '.txt';
+        link.click();
+        var b = overlay.querySelector('#histSaveBtn');
+        b.textContent = '✅ 已保存';
+        setTimeout(function() { b.textContent = '💾 保存'; }, 1500);
+      };
+
+      overlay.querySelector('#histEditBtn').onclick = function() {
+        var originalContent = bodyEl.innerHTML;
+        var editableText = htmlToEditableText(originalContent);
+        bodyEl.innerHTML = '<textarea id="histEditor" style="width:100%;min-height:400px;padding:16px;border:1px solid #ddd;border-radius:8px;font-size:14px;line-height:1.8;resize:vertical;font-family:inherit;">' + editableText.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</textarea>';
+        var btnContainer = overlay.querySelector('div[style*="display:flex"][style*="gap:8px"]');
+        btnContainer.innerHTML = '<button id="histConfirmBtn" style="background:rgba(255,255,255,.9);border:none;color:#1B5EA7;padding:6px 14px;border-radius:8px;font-size:12px;cursor:pointer;font-weight:600;">✅ 确认</button><button id="histCancelBtn" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:#fff;padding:6px 14px;border-radius:8px;font-size:12px;cursor:pointer;">✖ 取消</button><button id="histCloseBtn" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:#fff;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;">关闭</button>';
+        overlay.querySelector('#histConfirmBtn').onclick = function() {
+          var htmlContent = editableTextToHtml(document.getElementById('histEditor').value);
+          bodyEl.innerHTML = htmlContent;
+          btnContainer.innerHTML = '<button id="histDownloadBtn" style="background:rgba(255,255,255,.9);border:none;color:#1B5EA7;padding:6px 14px;border-radius:8px;font-size:12px;cursor:pointer;font-weight:600;">⬇ 下载</button><button id="histSaveBtn" style="background:rgba(255,255,255,.9);border:none;color:#1B5EA7;padding:6px 14px;border-radius:8px;font-size:12px;cursor:pointer;font-weight:600;">💾 保存</button><button id="histEditBtn" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:#fff;padding:6px 14px;border-radius:8px;font-size:12px;cursor:pointer;">✏️ 编辑</button><button id="histCloseBtn" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:#fff;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;">关闭</button>';
+          overlay.querySelector('#histDownloadBtn').onclick = overlay.querySelector('#histDownloadBtn').onclick;
+          overlay.querySelector('#histSaveBtn').onclick = overlay.querySelector('#histSaveBtn').onclick;
+          overlay.querySelector('#histEditBtn').onclick = arguments.callee;
+          overlay.querySelector('#histCloseBtn').onclick = function() { overlay.remove(); };
+        };
+        overlay.querySelector('#histCancelBtn').onclick = function() {
+          bodyEl.innerHTML = originalContent;
+          btnContainer.innerHTML = '<button id="histDownloadBtn" style="background:rgba(255,255,255,.9);border:none;color:#1B5EA7;padding:6px 14px;border-radius:8px;font-size:12px;cursor:pointer;font-weight:600;">⬇ 下载</button><button id="histSaveBtn" style="background:rgba(255,255,255,.9);border:none;color:#1B5EA7;padding:6px 14px;border-radius:8px;font-size:12px;cursor:pointer;font-weight:600;">💾 保存</button><button id="histEditBtn" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:#fff;padding:6px 14px;border-radius:8px;font-size:12px;cursor:pointer;">✏️ 编辑</button><button id="histCloseBtn" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:#fff;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;">关闭</button>';
+          overlay.querySelector('#histDownloadBtn').onclick = overlay.querySelector('#histDownloadBtn').onclick;
+          overlay.querySelector('#histSaveBtn').onclick = overlay.querySelector('#histSaveBtn').onclick;
+          overlay.querySelector('#histEditBtn').onclick = arguments.callee;
+          overlay.querySelector('#histCloseBtn').onclick = function() { overlay.remove(); };
+        };
       };
       overlay.querySelector('#histCloseBtn').onclick = function() { overlay.remove(); };
     }
@@ -1193,7 +1293,6 @@
             '</div>' +
             '<div style="display:flex;gap:8px;align-items:center;">' +
               '<button id="demoDownloadBtn" style="background:rgba(255,255,255,.9);border:none;color:#1B5EA7;padding:6px 14px;border-radius:8px;font-size:12px;cursor:pointer;font-weight:600;">⬇ 下载</button>' +
-              '<button id="demoCopyBtn" style="background:rgba(255,255,255,.9);border:none;color:#1B5EA7;padding:6px 14px;border-radius:8px;font-size:12px;cursor:pointer;font-weight:600;">📋 复制内容</button>' +
               '<button id="demoCloseBtn" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:#fff;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;">关闭</button>' +
             '</div>' +
           '</div>' +
@@ -1218,18 +1317,11 @@
         setTimeout(function() { b.textContent = '⬇ 下载'; }, 1500);
       };
 
-      overlay.querySelector('#demoCopyBtn').onclick = function() {
-        navigator.clipboard.writeText(bodyEl.innerText).then(function() {
-          var b = overlay.querySelector('#demoCopyBtn');
-          b.textContent = '✅ 已复制';
-          setTimeout(function() { b.textContent = '📋 复制内容'; }, 1500);
-        });
-      };
       overlay.querySelector('#demoCloseBtn').onclick = function() { overlay.remove(); };
 
       // 添加 h2 样式以匹配历史记录弹窗
       bodyEl.querySelectorAll('h2').forEach(function(h2) {
-        h2.style.cssText = 'font-size:15px;color:#1B5EA7;margin:18px 0 8px;font-weight:700;border-left:3px solid #1B5EA7;padding-left:8px;';
+        h2.style.cssText = 'font-size:16px;margin:16px 0 6px;font-weight:700;';
       });
       bodyEl.querySelectorAll('p').forEach(function(p) {
         p.style.marginBottom = '8px';
@@ -1556,293 +1648,284 @@
 
       if (isPlan) {
         var parsed = parseUserInput(rawText);
-        // 立即打开新窗口（绕过popup blocker）
-        var newWindow = window.open('', '_blank');
-        if (!newWindow) {
-          alert('请允许本页面弹出新窗口后重试');
-          return;
-        }
-        // 写入加载画面
-        var loadingHTML = '<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><title>教学计划参数</title><style>' +
-          'body{font-family:Microsoft YaHei,sans-serif;background:#F0F4F8;display:flex;align-items:center;' +
-          'justify-content:center;height:100vh;margin:0;flex-direction:column;gap:16px;}' +
-          '.msg{text-align:center;color:#555;font-size:15px;}' +
-          '.spinner{width:44px;height:44px;border:4px solid #D8E2EE;border-top-color:#1B5EA7;' +
-          'border-radius:50%;animation:spin .8s linear infinite;margin:0 auto;}' +
-          '@keyframes spin{to{transform:rotate(360deg)}}' +
-          '</style></head><body><div class="spinner"></div><p class="msg">AI 正在解析参数并构建表单，请稍候...</p></body></html>';
-        newWindow.document.write(loadingHTML);
-        newWindow.document.close();
-        // 显示overlay
-        document.getElementById('generating').classList.add('show');
-        setTimeout(function() {
-          document.getElementById('generating').classList.remove('show');
-          var historyId = addHistory(
-            (parsed.grade || '') + (parsed.subject || '教学') + '教学工作计划',
-            rawText,
-            'plan'
-          );
-          openFormWindow(newWindow, parsed, historyId);
-        }, 1800);
+        // 先保存到历史记录
+        var historyId = addHistory(
+          (parsed.grade || '') + (parsed.subject || '教学') + '教学工作计划',
+          rawText,
+          'plan'
+        );
+        // 跳转到结果页，结果页显示生成动画
+        generatePlanResult(parsed, historyId, rawText);
       } else {
         // 检查是否为校园活动策划
         var isEvent = activeTag && activeTag.textContent.indexOf('校园活动策划') !== -1;
         if (isEvent) {
           var parsedEvent = parseEventInput(rawText);
-          var newWindow2 = window.open('', '_blank');
-          if (!newWindow2) {
-            alert('请允许本页面弹出新窗口后重试');
-            return;
-          }
-          var loadingHTML2 = '<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><title>活动策划参数</title><style>' +
-            'body{font-family:Microsoft YaHei,sans-serif;background:#F0F4F8;display:flex;align-items:center;' +
-            'justify-content:center;height:100vh;margin:0;flex-direction:column;gap:16px;}' +
-            '.msg{text-align:center;color:#555;font-size:15px;}' +
-            '.spinner{width:44px;height:44px;border:4px solid #D8E2EE;border-top-color:#1B5EA7;' +
-            'border-radius:50%;animation:spin .8s linear infinite;margin:0 auto;}' +
-            '@keyframes spin{to{transform:rotate(360deg)}}' +
-            '</style></head><body><div class="spinner"></div><p class="msg">AI 正在解析活动参数并构建表单，请稍候...</p></body></html>';
-          newWindow2.document.write(loadingHTML2);
-          newWindow2.document.close();
-          document.getElementById('generating').classList.add('show');
-          setTimeout(function() {
-            document.getElementById('generating').classList.remove('show');
-            var parsed = parsedEvent;
-            var historyId = addHistory(
-              (parsed.theme || '校园主题') + '活动策划方案',
-              rawText,
-              'event'
-            );
-            sessionStorage.setItem('eventFormPreData', JSON.stringify({
-              theme: parsed.theme || '',
-              target: parsed.target || '',
-              goals: parsed.goals || '',
-              datetime: parsed.date || '',
-              location: parsed.location || '',
-              extra: '',
-              historyId: historyId
-            }));
-            var formWin = window.open('event-form.html', '_blank');
-            if (!formWin) {
-              alert('请允许弹出窗口后重试');
-            }
-          }, 1800);
+          var historyId = addHistory(
+            (parsedEvent.theme || '校园主题') + '活动策划方案',
+            rawText,
+            'event'
+          );
+          // 跳转到结果页
+          generateEventResult(parsedEvent, historyId);
         } else {
           // 检查是否为家长会发言稿
           var isSpeech = activeTag && activeTag.textContent.indexOf('家长会发言稿') !== -1;
           if (isSpeech) {
             var parsedSpeech = parseSpeechInput(rawText);
-            var newWindow3 = window.open('', '_blank');
-            if (!newWindow3) {
-              alert('请允许本页面弹出新窗口后重试');
-              return;
-            }
-            var loadingHTML3 = '<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><title>家长会发言稿参数</title><style>' +
-              'body{font-family:Microsoft YaHei,sans-serif;background:#F0F4F8;display:flex;align-items:center;' +
-              'justify-content:center;height:100vh;margin:0;flex-direction:column;gap:16px;}' +
-              '.msg{text-align:center;color:#555;font-size:15px;}' +
-              '.spinner{width:44px;height:44px;border:4px solid #E1BEE7;border-top-color:#7B1FA2;' +
-              'border-radius:50%;animation:spin .8s linear infinite;margin:0 auto;}' +
-              '@keyframes spin{to{transform:rotate(360deg)}}' +
-              '</style></head><body><div class="spinner"></div><p class="msg">AI 正在解析家长会参数并构建表单，请稍候...</p></body></html>';
-            newWindow3.document.write(loadingHTML3);
-            newWindow3.document.close();
-            document.getElementById('generating').classList.add('show');
-          setTimeout(function() {
-            document.getElementById('generating').classList.remove('show');
-            var parsed = parsedSpeech;
-            // 合并年级和学期
-            var gradeSemester = (parsed.grade || '三年级') + (parsed.semester === '下学期' ? '下学期' : '上学期');
+            var gradeSemester = (parsedSpeech.grade || '三年级') + (parsedSpeech.semester === '下学期' ? '下学期' : '上学期');
             var historyId = addHistory(
-              gradeSemester + (parsed.meetingTheme || '家长会') + '发言稿',
+              gradeSemester + (parsedSpeech.meetingTheme || '家长会') + '发言稿',
               rawText,
               'speech'
             );
-            sessionStorage.setItem('speechFormPreData', JSON.stringify({
-              grade: gradeSemester,
-              teacher: parsed.teacherName || '',
-              theme: parsed.meetingTheme || '',
-              purpose: parsed.purpose || '',
-              classinfo: parsed.classOverview || '',
-              examples: parsed.examples || '',
-              subjects: parsed.subjects || '',
-              extra: '',
-              historyId: historyId
-            }));
-            var formWin = window.open('speech-form.html', '_blank');
-            if (!formWin) {
-              alert('请允许弹出窗口后重试');
-            }
-          }, 1800);
+            // 跳转到结果页
+            generateSpeechResult(parsedSpeech, gradeSemester, historyId);
           } else {
             // 显示demo结果
-            document.getElementById('generating').classList.add('show');
-            setTimeout(function() {
-              document.getElementById('generating').classList.remove('show');
-              showDemoResult(rawText);
-            }, 1800);
+            showDemoResult(rawText);
           }
         }
       }
     }
 
-      // ====== 打开表单窗口 ======
-      function openFormWindow(win, parsed, historyId) {
-        var subject = parsed.subject || '语文';
-        var grade = parsed.grade || '一年级上';
-        var textbook = parsed.textbook || '统编版（2016）';
-        var overview = parsed.overview || '';
-        var resources = parsed.resources || '';
-        var goals = parsed.teachingGoals || '';
-        var methods = parsed.methods || '';
-        var extra = [goals ? '【教学目标】' + goals : '', methods ? '【教学方法】' + methods : ''].filter(Boolean).join('\n');
+    // ====== 直接生成教学计划结果 ======
+    function generatePlanResult(parsed, historyId, rawText) {
+      var subject = parsed.subject || '语文';
+      var grade = parsed.grade || '一年级上';
+      var textbook = parsed.textbook || '统编版（2016）';
+      var overview = parsed.overview || '';
+      var resources = parsed.resources || '';
+      var goals = parsed.teachingGoals || '';
+      var methods = parsed.methods || '';
+      var planTitle = grade + subject + '教学工作计划';
 
-        var structItems = [
-          '教学目标', '教学过程', '教学重难点', '教学进度安排',
-          '教学准备', '教学方法', '教学评价方式'
-        ];
+      var s4 = '<p>依据课程标准，结合学生实际，制定本学期教学目标如下：</p><ul><li>知识与技能目标：掌握本学期' + subject + '核心知识点与基本技能，形成完整的知识体系</li><li>过程与方法目标：通过自主探究、合作学习等方式，培养学科思维和解决问题的能力</li><li>情感态度与价值观目标：激发学生对' + subject + '学习的兴趣，养成严谨求实的学习态度，树立正确的价值观</li><li>核心素养目标：在学科学习中渗透核心素养培养，提升学生综合素养</li></ul>';
+      var s5 = '<p>教学重点：本学期' + subject + '核心概念的深度理解与灵活运用，基础技能的熟练掌握与迁移应用</p><p>教学难点：综合性、开放性问题的分析思路与方法，学科核心素养的落地实践</p>';
+      var s7 = '<ul><li>第1-3周：第1单元内容学习与入学适应性教育</li><li>第4-6周：第2-3单元内容学习与阶段性巩固</li><li>第7-9周：第4-5单元内容学习与期中复习</li><li>第10周：期中质量检测与教学反思</li><li>第11-13周：第6-7单元内容学习</li><li>第14-16周：第8单元内容学习与期末系统复习</li><li>第17-18周：期末复习整理与质量检测</li><li>第19-20周：学期总结、作业展评与假期生活指导</li></ul>';
 
-        var structTagHTML = '';
-        for (var i = 0; i < structItems.length; i++) {
-          structTagHTML += '<span class="struct-tag selected" onclick="this.classList.toggle(\'selected\')">' + structItems[i] + '</span>';
+      var structContent = {};
+      structContent['教学目标'] = { title: '一、教学目标', content: s4 };
+      structContent['教学过程'] = { title: '二、教学过程', content: '<p>（教学过程具体内容可根据实际教学情况补充）</p>' };
+      structContent['教学重难点'] = { title: '三、教学重难点', content: s5 };
+      structContent['教学进度安排'] = { title: '四、教学进度安排', content: s7 };
+      structContent['教学准备'] = { title: '五、教学准备', content: '<p>（教学准备具体内容可根据实际教学情况补充）</p>' };
+      structContent['教学方法'] = { title: '六、教学方法', content: '<p>本学期教学注重多元教学方法的有机结合，主要包括：</p><ul><li>情境教学法：通过真实情境的创设，激发学习兴趣，加深知识理解</li><li>探究式学习：引导学生主动发现问题、提出问题、解决问题，培养探究精神</li><li>小组合作学习：发挥团队协作力量，互帮互学，共同进步</li><li>分层教学：关注个体差异，实施差异化指导，确保教学公平与实效</li></ul>' };
+      structContent['教学评价方式'] = { title: '七、教学评价方式', content: '<p>（教学评价方式具体内容可根据实际教学情况补充）</p>' };
+
+      var bodyHTML = '';
+      var structs = ['教学目标', '教学过程', '教学重难点', '教学进度安排', '教学准备', '教学方法', '教学评价方式'];
+      for (var idx = 0; idx < structs.length; idx++) {
+        var s = structs[idx];
+        if (structContent[s]) {
+          bodyHTML += '<h2 style="font-size:15px;color:#1B5EA7;margin:18px 0 8px;font-weight:700;border-left:3px solid #1B5EA7;padding-left:8px;">' + structContent[s].title + '</h2>' + structContent[s].content;
         }
-        structTagHTML += '<button class="add-custom-btn" onclick="addCustom()">+ 自定义</button>';
-
-        var subjectOptions = '';
-        var subjects = ['语文', '数学', '英语', '物理', '化学', '生物', '历史', '地理', '道德与法治', '音乐', '美术', '体育', '信息技术', '其他'];
-        for (var s = 0; s < subjects.length; s++) {
-          var sel = subjects[s] === subject ? 'selected' : '';
-          subjectOptions += '<option value="' + subjects[s] + '" ' + sel + '>' + subjects[s] + '</option>';
-        }
-
-        var gradeOptions = '';
-        var grades = [
-          '一年级上', '一年级下',
-          '二年级上', '二年级下',
-          '三年级上', '三年级下',
-          '四年级上', '四年级下',
-          '五年级上', '五年级下',
-          '六年级上', '六年级下',
-          '七年级上', '七年级下',
-          '八年级上', '八年级下',
-          '九年级上', '九年级下',
-          '高一上', '高一下',
-          '高二上', '高二下',
-          '高三上', '高三下'
-        ];
-        for (var g = 0; g < grades.length; g++) {
-          var selG = grades[g] === grade ? 'selected' : '';
-          gradeOptions += '<option value="' + grades[g] + '" ' + selG + '>' + grades[g] + '</option>';
-        }
-
-        var textbookOptions = '';
-        var textbooks = ['统编版（2016）', '人教版', '北师大版', '苏教版', '沪教版', '外研版', '其他'];
-        for (var tb = 0; tb < textbooks.length; tb++) {
-          var selTb = textbooks[tb] === textbook ? 'selected' : '';
-          textbookOptions += '<option value="' + textbooks[tb] + '" ' + selTb + '>' + textbooks[tb] + '</option>';
-        }
-
-        var fullHTML = '<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>填写教学计划参数 - 兆涵科技</title><style>';
-        fullHTML += '* { margin: 0; padding: 0; box-sizing: border-box; }';
-        fullHTML += 'body { font-family: "Microsoft YaHei","PingFang SC",sans-serif; background: #F0F4F8; color: #333; min-height: 100vh; }';
-        fullHTML += '.back-btn { position: fixed; left: 20px; top: 16px; background: #fff; border: 1.5px solid #D8E2EE; color: #1B5EA7; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,.1); transition: all .2s; z-index: 100; }';
-        fullHTML += '.back-btn:hover { background: #1B5EA7; color: #fff; border-color: #1B5EA7; }';
-        fullHTML += '.top-bar { background: #1B5EA7; color: #fff; padding: 0 40px; height: 56px; display: flex; align-items: center; gap: 10px; box-shadow: 0 2px 8px rgba(0,0,0,.15); position: sticky; top: 0; z-index: 10; }';
-        fullHTML += '.top-bar-title { font-size: 16px; font-weight: 600; }';
-        fullHTML += '.top-bar-badge { background: rgba(255,255,255,.2); font-size: 12px; padding: 3px 12px; border-radius: 20px; }';
-        fullHTML += '.container { max-width: 860px; margin: 28px auto 60px; padding: 0 20px; }';
-        fullHTML += '.card { background: #fff; border-radius: 16px; border: 1px solid #E8EEF4; box-shadow: 0 2px 12px rgba(27,94,167,.06); padding: 32px 36px; }';
-        fullHTML += '.page-title { font-size: 20px; font-weight: 700; color: #1a1a2e; margin-bottom: 6px; }';
-        fullHTML += '.page-sub { font-size: 13px; color: #999; margin-bottom: 28px; }';
-        fullHTML += '.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }';
-        fullHTML += '.form-row.single { grid-template-columns: 1fr; }';
-        fullHTML += '.form-group { display: flex; flex-direction: column; gap: 6px; }';
-        fullHTML += '.form-label { font-size: 13px; font-weight: 600; color: #444; }';
-        fullHTML += '.form-label .req { color: #E53935; }';
-        fullHTML += '.form-input,.form-select,.form-textarea { border: 1.5px solid #D8E2EE; border-radius: 10px; padding: 10px 14px; font-size: 14px; color: #333; outline: none; transition: border-color .2s,box-shadow .2s; font-family: inherit; background: #fff; width: 100%; }';
-        fullHTML += '.form-input:focus,.form-select:focus,.form-textarea:focus { border-color: #1B5EA7; box-shadow: 0 0 0 3px rgba(27,94,167,.1); }';
-        fullHTML += '.form-textarea { resize: vertical; min-height: 90px; line-height: 1.8; }';
-        fullHTML += '.struct-tags { display: flex; flex-wrap: wrap; gap: 8px; }';
-        fullHTML += '.struct-tag { background: #EEF4FF; border: 1.5px solid #C8DAF5; color: #1B5EA7; padding: 5px 14px; border-radius: 20px; font-size: 13px; cursor: pointer; transition: all .2s; user-select: none; }';
-        fullHTML += '.struct-tag:hover,.struct-tag.selected { background: #1B5EA7; color: #fff; border-color: #1B5EA7; }';
-        fullHTML += '.add-custom-btn { background: transparent; border: 1.5px dashed #C8DAF5; color: #888; padding: 5px 14px; border-radius: 20px; font-size: 13px; cursor: pointer; }';
-        fullHTML += '.add-custom-btn:hover { border-color: #1B5EA7; color: #1B5EA7; }';
-        fullHTML += '.custom-module-input { display: none; align-items: center; gap: 8px; margin-top: 8px; }';
-        fullHTML += '.custom-module-input.show { display: flex; }';
-        fullHTML += '.custom-module-input input { flex: 1; border: 1.5px solid #D8E2EE; border-radius: 8px; padding: 6px 12px; font-size: 13px; outline: none; font-family: inherit; }';
-        fullHTML += '.custom-module-remove { color: #E53935; cursor: pointer; font-size: 16px; font-weight: bold; }';
-        fullHTML += '.btn-submit { width: 100%; background: #1B5EA7; color: #fff; border: none; padding: 13px; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 16px rgba(27,94,167,.35); transition: all .2s; letter-spacing: 2px; margin-top: 24px; }';
-        fullHTML += '.btn-submit:hover { box-shadow: 0 6px 22px rgba(27,94,167,.5); transform: translateY(-1px); }';
-        fullHTML += '.generating-overlay { display: none; position: fixed; inset: 0; background: rgba(255,255,255,.88); z-index: 999; align-items: center; justify-content: center; flex-direction: column; gap: 16px; }';
-        fullHTML += '.generating-overlay.show { display: flex; }';
-        fullHTML += '.spinner { width: 44px; height: 44px; border: 4px solid #D8E2EE; border-top-color: #1B5EA7; border-radius: 50%; animation: spin .8s linear infinite; }';
-        fullHTML += '@keyframes spin { to { transform: rotate(360deg); } }';
-        fullHTML += '.generating-text { font-size: 15px; color: #555; font-weight: 500; }';
-        fullHTML += '</style></head><body>';
-        fullHTML += '<button class="back-btn" onclick="goBack()" title="返回首页"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>';
-        fullHTML += '<div class="top-bar"><span class="top-bar-title">📋 填写教学计划参数</span><span class="top-bar-badge">AI 已解析 · 可手动调整</span></div>';
-        fullHTML += '<div class="container"><div class="card">';
-        fullHTML += '<div class="page-title">教学工作计划 · 参数确认</div>';
-        fullHTML += '<div class="page-sub">请确认以下 AI 解析的参数，如有需要可直接修改，确认后生成完整教学计划</div>';
-        fullHTML += '<div class="form-row"><div class="form-group"><label class="form-label">科目 <span class="req">*</span></label><select class="form-select" id="f-subject">' + subjectOptions + '</select></div>';
-        fullHTML += '<div class="form-group"><label class="form-label">年级（含学期） <span class="req">*</span></label><select class="form-select" id="f-grade">' + gradeOptions + '</select></div></div>';
-        fullHTML += '<div class="form-row single"><div class="form-group"><label class="form-label">教材版本</label><select class="form-select" id="f-textbook">' + textbookOptions + '</select></div></div>';
-        fullHTML += '<div class="form-row single"><div class="form-group"><label class="form-label">学情概述</label><textarea class="form-textarea" id="f-overview" placeholder="简要描述您班级的学情，如学生人数、学习基础、课堂氛围等...">' + overview + '</textarea></div></div>';
-        fullHTML += '<div class="form-row single"><div class="form-group"><label class="form-label">教学资源</label><textarea class="form-textarea" id="f-resources" placeholder="简要描述您已有的教学资源，如教材、教参、课件、器材等...">' + resources + '</textarea></div></div>';
-        fullHTML += '<div class="form-row single"><div class="form-group"><label class="form-label">教学计划结构</label><div class="struct-tags" id="structTags">' + structTagHTML + '</div>';
-        fullHTML += '<div class="custom-module-input" id="customModule"><input type="text" id="customInput" placeholder="输入自定义模块名称，按回车添加" onkeydown="handleKey(event)"><span class="custom-module-remove" onclick="cancelCustom()">✕</span></div></div></div>';
-        fullHTML += '<div class="form-row single"><div class="form-group"><label class="form-label">附加要求</label><textarea class="form-textarea" id="f-extra" placeholder="如有特殊要求或个性化需求，请在此说明...">' + extra + '</textarea></div></div>';
-        fullHTML += '<button class="btn-submit" onclick="submitForm()">立 即 生 成</button>';
-        fullHTML += '</div></div>';
-        fullHTML += '<div class="generating-overlay" id="gen"><div class="spinner"></div><div class="generating-text">AI 正在生成教学计划，请稍候...</div></div>';
-        fullHTML += '<script>';
-        fullHTML += 'function goBack(){window.close();}';
-        fullHTML += 'function getSelectedStructs(){return Array.from(document.querySelectorAll(".struct-tag.selected")).map(function(t){return t.textContent;});}';
-        fullHTML += 'function addCustom(){document.getElementById("customModule").classList.add("show");document.getElementById("customInput").focus();}';
-        fullHTML += 'function handleKey(e){if(e.key==="Enter"){var n=document.getElementById("customInput").value.trim();if(n){var t=document.createElement("span");t.className="struct-tag selected";t.textContent=n;t.onclick=function(){this.classList.toggle("selected");};document.querySelector(".add-custom-btn").before(t);document.getElementById("customInput").value="";document.getElementById("customModule").classList.remove("show");}e.preventDefault();}else if(e.key==="Escape"){cancelCustom();}}';
-        fullHTML += 'function cancelCustom(){document.getElementById("customModule").classList.remove("show");document.getElementById("customInput").value="";}';
-        fullHTML += 'function submitForm(){try{';
-        fullHTML += 'var subject=document.getElementById("f-subject").value;';
-        fullHTML += 'var grade=document.getElementById("f-grade").value;';
-        fullHTML += 'var textbook=document.getElementById("f-textbook").value;';
-        fullHTML += 'var overview=document.getElementById("f-overview").value;';
-        fullHTML += 'var resources=document.getElementById("f-resources").value;';
-        fullHTML += 'var extra=document.getElementById("f-extra").value;';
-        fullHTML += 'var structs=getSelectedStructs();';
-        fullHTML += 'var planTitle=grade+subject+"教学工作计划";';
-        fullHTML += 'var s4="<p>依据课程标准，结合学生实际，制定本学期教学目标如下：</p><ul><li>知识与技能目标：掌握本学期'+subject+'核心知识点与基本技能，形成完整的知识体系</li><li>过程与方法目标：通过自主探究、合作学习等方式，培养学科思维和解决问题的能力</li><li>情感态度与价值观目标：激发学生对'+subject+'学习的兴趣，养成严谨求实的学习态度，树立正确的价值观</li><li>核心素养目标：在学科学习中渗透核心素养培养，提升学生综合素养</li></ul>";';
-        fullHTML += 'var s5="<p>教学重点：本学期'+subject+'核心概念的深度理解与灵活运用，基础技能的熟练掌握与迁移应用</p><p>教学难点：综合性、开放性问题的分析思路与方法，学科核心素养的落地实践</p>";';
-        fullHTML += 'var s7="<ul><li>第1-3周：第1单元内容学习与入学适应性教育</li><li>第4-6周：第2-3单元内容学习与阶段性巩固</li><li>第7-9周：第4-5单元内容学习与期中复习</li><li>第10周：期中质量检测与教学反思</li><li>第11-13周：第6-7单元内容学习</li><li>第14-16周：第8单元内容学习与期末系统复习</li><li>第17-18周：期末复习整理与质量检测</li><li>第19-20周：学期总结、作业展评与假期生活指导</li></ul>";';
-        fullHTML += 'var structContent={};';
-        fullHTML += 'structContent["教学目标"]={title:"一、教学目标",content:s4};';
-        fullHTML += 'structContent["教学过程"]={title:"二、教学过程",content:"<p>（教学过程具体内容可根据实际教学情况补充）</p>"};';
-        fullHTML += 'structContent["教学重难点"]={title:"三、教学重难点",content:s5};';
-        fullHTML += 'structContent["教学进度安排"]={title:"四、教学进度安排",content:s7};';
-        fullHTML += 'structContent["教学准备"]={title:"五、教学准备",content:"<p>（教学准备具体内容可根据实际教学情况补充）</p>"};';
-        fullHTML += 'structContent["教学方法"]={title:"六、教学方法",content:"<p>本学期教学注重多元教学方法的有机结合，主要包括：</p><ul><li>情境教学法：通过真实情境的创设，激发学习兴趣，加深知识理解</li><li>探究式学习：引导学生主动发现问题、提出问题、解决问题，培养探究精神</li><li>小组合作学习：发挥团队协作力量，互帮互学，共同进步</li><li>分层教学：关注个体差异，实施差异化指导，确保教学公平与实效</li></ul>"};';
-        fullHTML += 'structContent["教学评价方式"]={title:"七、教学评价方式",content:"<p>（教学评价方式具体内容可根据实际教学情况补充）</p>"};';
-        fullHTML += 'var bodyHTML="";';
-        fullHTML += 'for(var idx=0;idx<structs.length;idx++){';
-        fullHTML += 'var s=structs[idx];';
-        fullHTML += 'if(structContent[s]){';
-        fullHTML += 'bodyHTML+="<h2 style=\'font-size:15px;color:#1B5EA7;margin:18px 0 8px;font-weight:700;border-left:3px solid #1B5EA7;padding-left:8px;\'>"+structContent[s].title+"</h2>"+structContent[s].content;';
-        fullHTML += '}else{';
-        fullHTML += 'bodyHTML+="<h2 style=\'font-size:15px;color:#1B5EA7;margin:18px 0 8px;font-weight:700;border-left:3px solid #1B5EA7;padding-left:8px;\'>"+(idx+1)+". "+s+"</h2><p>（"+s+"具体内容可根据实际教学情况补充）</p>";';
-        fullHTML += '}}';
-        fullHTML += 'if(extra){';
-        fullHTML += 'bodyHTML+="<h2 style=\'font-size:15px;color:#1B5EA7;margin:18px 0 8px;font-weight:700;border-left:3px solid #1B5EA7;padding-left:8px;\'>附：附加说明</h2><p>"+extra.replace(/\\n/g,"<br>")+"</p>";';
-        fullHTML += '}';
-        fullHTML += 'sessionStorage.setItem("planResult",JSON.stringify({title:planTitle,content:bodyHTML}));';
-        fullHTML += 'sessionStorage.setItem("planFormData",JSON.stringify({subject:subject,grade:grade,textbook:textbook,overview:overview,resources:resources,extra:extra,structs:structs}));';
-        fullHTML += 'var resultWin=window.open("plan-result.html","_blank");';
-        fullHTML += 'if(!resultWin){alert("请允许弹出窗口后重试");}';
-        fullHTML += '}catch(err){alert("生成失败："+err.message);}}';
-        fullHTML += '<\/script></body></html>';
-
-        win.document.open();
-        win.document.write(fullHTML);
-        win.document.close();
       }
+      if (goals || methods) {
+        var extra = [goals ? '【教学目标】' + goals : '', methods ? '【教学方法】' + methods : ''].filter(Boolean).join('\n');
+        bodyHTML += '<h2 style="font-size:15px;color:#1B5EA7;margin:18px 0 8px;font-weight:700;border-left:3px solid #1B5EA7;padding-left:8px;">附：附加说明</h2><p>' + extra.replace(/\n/g, '<br>') + '</p>';
+      }
+
+      // 更新历史记录
+      updateHistoryContent(historyId, bodyHTML);
+      // 保存并跳转
+      sessionStorage.setItem('planResult', JSON.stringify({ title: planTitle, content: bodyHTML }));
+      sessionStorage.setItem('planFormData', JSON.stringify({ subject: subject, grade: grade, textbook: textbook, overview: overview, resources: resources }));
+      var resultWin = window.open('plan-result.html', '_blank');
+      if (!resultWin) { alert('请允许弹出窗口后重试'); }
+    }
+
+    // ====== 直接生成活动策划结果 ======
+    function generateEventResult(parsed, historyId) {
+      var theme = parsed.theme || '校园主题活动';
+      var target = parsed.target || '全体学生';
+      var goals = parsed.goals || '通过本次活动，激发学生兴趣，培养综合素养';
+      var datetime = parsed.date || '';
+      var location = parsed.location || '学校操场';
+
+      var p = '<div style="max-width:900px;margin:0 auto;font-family:Microsoft YaHei,sans-serif;background:#F0F4F8;min-height:100vh;padding-bottom:40px;">';
+      p += '<div style="max-width:860px;margin:24px auto;background:#fff;border-radius:14px;border:1.5px solid #E8EEF4;overflow:hidden;box-shadow:0 2px 12px rgba(27,94,167,.06);">';
+      p += '<div style="background:linear-gradient(135deg,#1B5EA7,#0D47A1);color:#fff;padding:14px 22px;font-size:14px;font-weight:600;">🎉 ' + theme + ' - 活动策划方案</div>';
+
+      // 活动基本信息
+      var s_basic = '<h2 style="font-size:16px;margin:12px 0 8px;font-weight:700;">活动基本信息</h2>';
+      s_basic += '<p><strong>活动主题：</strong>' + theme + '</p>';
+      s_basic += '<p><strong>活动对象：</strong>' + target + '</p>';
+      s_basic += '<p><strong>活动目标：</strong>' + goals + '</p>';
+      s_basic += '<p><strong>时间与规模：</strong>' + (datetime || '待定') + '</p>';
+      s_basic += '<p><strong>活动地点：</strong>' + location + '</p>';
+
+      // 组织分工
+      var s_org = '<h2 style="font-size:16px;margin:12px 0 8px;font-weight:700;">（一）领导小组</h2>';
+      s_org += '<p><strong>组长：</strong>负责活动整体统筹与决策，协调各部门工作，把控活动整体方向与进度。</p>';
+      s_org += '<p><strong>副组长：</strong>协助组长开展工作，负责具体事务的落实与监督，及时向组长汇报进展。</p>';
+      s_org += '<p><strong>组员：</strong>负责各项具体工作的执行与跟进，配合组长与副组长完成活动各环节任务。</p>';
+      s_org += '<h2 style="font-size:16px;margin:12px 0 8px;font-weight:700;">（二）执行小组</h2>';
+      s_org += '<p><strong>宣传组：</strong>负责活动前期宣传、氛围营造、拍照记录及后期报道撰写。</p>';
+      s_org += '<p><strong>后勤组：</strong>负责场地布置、设备调试、活动道具准备及现场物资管理。</p>';
+      s_org += '<p><strong>主持组：</strong>负责活动主持词撰写、主持人培训及现场流程引导。</p>';
+      s_org += '<p><strong>医疗组：</strong>负责现场医疗保障，准备常用药品及急救设备，及时处理突发状况。</p>';
+      s_org += '<p><strong>教师协助组：</strong>负责组织学生、维护秩序，配合各小组完成活动执行与现场管理。</p>';
+      s_org += '<p><strong>评比组：</strong>负责活动评分标准制定、评委安排及比赛结果的统计与公示。</p>';
+
+      // 活动流程
+      var s_flow = '<h2 style="font-size:16px;margin:12px 0 8px;font-weight:700;">前期准备（活动前2周）</h2>';
+      s_flow += '<p>确定活动主题与方案，成立筹备小组；完成活动申报与审批；准备活动所需物资与设备；做好活动宣传与学生动员工作。</p>';
+      s_flow += '<h2 style="font-size:16px;margin:12px 0 8px;font-weight:700;">活动当天（活动当日）</h2>';
+      s_flow += '<p>08:00 前完成场地布置与设备调试；08:30 参加人员签到入场；09:00 活动正式开始，主持人开场，依次开展各环节；12:00 活动结束，合影留念；12:30 场地整理与物资回收。</p>';
+      s_flow += '<h2 style="font-size:16px;margin:12px 0 8px;font-weight:700;">后期收尾（活动后1周）</h2>';
+      s_flow += '<p>活动总结与资料归档；评选表彰优秀个人与集体；撰写活动通讯稿并进行宣传报道；收集师生反馈意见，持续改进活动质量。</p>';
+
+      // 物资清单
+      var s_materials = '<h2 style="font-size:16px;margin:12px 0 8px;font-weight:700;">音响设备</h2>';
+      s_materials += '<ul><li>话筒、音响、投影仪（若干，提前调试）</li></ul>';
+      s_materials += '<h2 style="font-size:16px;margin:12px 0 8px;font-weight:700;">场地布置</h2>';
+      s_materials += '<ul><li>横幅、气球、彩旗、展板（按需准备，提前一天布置）</li></ul>';
+      s_materials += '<h2 style="font-size:16px;margin:12px 0 8px;font-weight:700;">文具用品</h2>';
+      s_materials += '<ul><li>奖状、证书、笔、记分册（按参与人数，提前印刷）</li></ul>';
+      s_materials += '<h2 style="font-size:16px;margin:12px 0 8px;font-weight:700;">医疗保障</h2>';
+      s_materials += '<ul><li>急救药箱、矿泉水、纸巾（若干，设置在观众席旁）</li></ul>';
+      s_materials += '<h2 style="font-size:16px;margin:12px 0 8px;font-weight:700;">奖品证书</h2>';
+      s_materials += '<ul><li>奖状、奖牌、小礼品（按奖项设置，提前采购到位）</li></ul>';
+
+      // 安全保障
+      var s_safety = '<h2 style="font-size:16px;margin:12px 0 8px;font-weight:700;">场地安全</h2>';
+      s_safety += '<p>活动前对场地进行全面安全检查，排除用电隐患、消防通道堵塞、地面积水等不安全因素；确保活动区域地面平整无障碍物；活动期间保持场地通风与照明充足。</p>';
+      s_safety += '<h2 style="font-size:16px;margin:12px 0 8px;font-weight:700;">人员管理</h2>';
+      s_safety += '<p>严格控制活动参与人数，安排专人负责现场秩序维护；各班班主任全程随班负责，组织学生有序参与各项活动；设置安全引导员，引导学生安全上下场，防止拥挤踩踏。</p>';
+      s_safety += '<h2 style="font-size:16px;margin:12px 0 8px;font-weight:700;">医疗保障</h2>';
+      s_safety += '<p>提前与校医室沟通，配备专业医护人员值守；准备常用急救药品、创可贴、消毒液等医疗物资；制定受伤应急处置流程，发现学生受伤立即进行处置并送医。</p>';
+      s_safety += '<h2 style="font-size:16px;margin:12px 0 8px;font-weight:700;">消防安全</h2>';
+      s_safety += '<p>活动期间确保所有消防通道畅通无阻；场地内禁止明火及易燃易爆物品；配备灭火器等消防器材，安排专人熟悉灭火器位置及使用方法。</p>';
+
+      // 应急预案
+      var s_emergency = '<h2 style="font-size:16px;margin:12px 0 8px;font-weight:700;">1. 突发疾病应急处置</h2>';
+      s_emergency += '<p>发现学生突发疾病或身体不适，立即通知现场医护人员进行初步处置；如情况严重，在第一时间拨打120急救电话，同时联系学生家长并向学校领导汇报；安排专人护送就医，做好现场秩序维护。</p>';
+      s_emergency += '<h2 style="font-size:16px;margin:12px 0 8px;font-weight:700;">2. 意外伤害应急处置</h2>';
+      s_emergency += '<p>发生意外伤害时，立即停止相关活动，保护现场；现场医护人员进行应急处理；根据伤情决定是否送医，同时做好伤情记录；及时与家长沟通，妥善处理后续事宜。</p>';
+      s_emergency += '<h2 style="font-size:16px;margin:12px 0 8px;font-weight:700;">3. 设备故障应急处置</h2>';
+      s_emergency += '<p>活动期间若音响、投影等设备出现故障，立即启用备用设备；如短时间内无法修复，由主持人灵活调整活动顺序，优先保障正常教学秩序；安排专人负责设备维护，提前做好设备调试与备用方案。</p>';
+      s_emergency += '<h2 style="font-size:16px;margin:12px 0 8px;font-weight:700;">4. 恶劣天气应急处置</h2>';
+      s_emergency += '<p>密切注意活动当天的天气预报；如遇恶劣天气（暴雨、大风、雷电等），由领导小组研判后决定是否延期或改换室内场地；已开始的活动中遇突发天气，迅速组织学生有序转移至安全区域，待天气好转后再行恢复。</p>';
+      s_emergency += '<h2 style="font-size:16px;margin:12px 0 8px;font-weight:700;">5. 人员走失应急处置</h2>';
+      s_emergency += '<p>发现学生走失后，立即通知各区域负责人协同寻找；安排专人到校门口守候，防止学生自行离校；如短时间内未找到，联系家长确认学生是否已自行回家，并及时向学校领导汇报。</p>';
+
+      // 构建内容区
+      var allContent = {};
+      allContent['活动基本信息'] = { title: '一、活动基本信息', content: s_basic };
+      allContent['组织分工'] = { title: '二、组织分工', content: s_org };
+      allContent['活动流程'] = { title: '三、活动流程', content: s_flow };
+      allContent['物资清单'] = { title: '四、物资清单', content: s_materials };
+      allContent['安全保障'] = { title: '五、安全保障', content: s_safety };
+      allContent['应急预案'] = { title: '六、应急预案', content: s_emergency };
+
+      p += '<div style="padding:22px 26px;font-size:14px;line-height:1.9;color:#444;">';
+      var structs = ['活动基本信息', '组织分工', '活动流程', '物资清单', '安全保障', '应急预案'];
+      for (var idx = 0; idx < structs.length; idx++) {
+        var s = structs[idx];
+        if (allContent[s]) {
+          p += '<h2 style="font-size:16px;margin:18px 0 8px;font-weight:700;">' + allContent[s].title + '</h2>' + allContent[s].content;
+        }
+      }
+      p += '</div></div></div>';
+
+      // 更新历史记录
+      updateHistoryContent(historyId, p);
+      // 保存并跳转
+      sessionStorage.setItem('eventResult', JSON.stringify({ title: theme + ' - 活动策划方案', content: p }));
+      var resultWin = window.open('event-result.html', '_blank');
+      if (!resultWin) { alert('请允许弹出窗口后重试'); }
+    }
+
+    // ====== 直接生成家长会发言稿结果 ======
+    function generateSpeechResult(parsed, gradeSemester, historyId) {
+      var teacher = parsed.teacherName || '';
+      var meetingTheme = parsed.meetingTheme || '';
+      var purpose = parsed.purpose || '';
+      var classOverview = parsed.classOverview || '本班现有学生42人，整体学习氛围浓厚，大部分同学能够认真完成各项学习任务，课堂参与度较高。';
+      var examples = parsed.examples || '近期班级涌现出一批学习刻苦、进步明显的学生，如小明同学在上学期期末考试中进步了15名，小华同学在数学竞赛中获得了校级一等奖。';
+      var semester = gradeSemester;
+
+      var s_intro = '<p>尊敬的各位家长朋友们：</p>';
+      s_intro += '<p>大家好！首先非常感谢各位家长在百忙之中抽出时间参加今天的家长会。我是' + teacher + '，今天非常荣幸能够与大家面对面地交流孩子的教育成长问题。</p>';
+      s_intro += '<p>今天我们家长会的主题是「' + meetingTheme + '」，主要想围绕以下几个方面和大家进行深入交流：</p>';
+      s_intro += '<ul>';
+      s_intro += '<li>班级整体情况介绍</li><li>学期学情分析与反馈</li><li>各学科教学情况与重点</li><li>家校合作的具体建议</li><li>家长互动答疑环节</li>';
+      s_intro += '</ul><p>希望今天的交流能够帮助大家更全面地了解孩子在校的表现，也让我们携手为孩子的健康成长创造更好的环境。</p>';
+
+      var s_greeting = '<p>在正式交流之前，我想先向各位家长表达几点感谢：</p>';
+      s_greeting += '<p>第一，感谢各位家长一直以来对学校和班级工作的理解与支持。孩子的教育离不开家庭和学校的紧密配合，正是因为有大家的信任和配合，我们的班级才能不断进步。</p>';
+      s_greeting += '<p>第二，感谢大家今天准时参会。教育孩子是学校和家庭共同的责任，今天大家能够放下手中的事务来参加家长会，体现了对孩子的重视和对学校的信任。</p>';
+      s_greeting += '<p>第三，希望各位家长在今天的交流中畅所欲言，积极分享您在家庭教育中的经验和方法，让我们互相学习，共同提高。</p>';
+
+      var s_feedback = '<p>' + classOverview + '</p>';
+      s_feedback += '<h2 style="font-size:16px;margin:12px 0 8px;font-weight:700;">班级整体表现</h2>';
+      s_feedback += '<ul>';
+      s_feedback += '<li>大部分同学学习态度认真，课堂参与度高，能积极举手发言</li><li>作业完成情况整体良好，但存在个体差异，需要针对性辅导</li><li>班级凝聚力强，集体活动参与积极，学生之间互帮互助氛围浓厚</li><li>学生综合素养逐步提升，在各科目学习中都涌现出一批表现优异的学生</li>';
+      s_feedback += '</ul>';
+      s_feedback += '<p>同时，我们也要客观看待班级中存在的问题：</p>';
+      s_feedback += '<ul>';
+      s_feedback += '<li>部分学生在时间管理和学习计划方面还需加强</li><li>个别学生课堂注意力集中度有待提高，需要家校协同关注</li><li>学生在自主学习能力和探究精神方面还有提升空间</li>';
+      s_feedback += '</ul>';
+
+      s_feedback += '<h2 style="font-size:16px;margin:12px 0 8px;font-weight:700;">学生代表案例</h2>';
+      s_feedback += '<p>' + examples + '</p>';
+      s_feedback += '<p>以上这些案例告诉我们，每个孩子都有自己的闪光点，关键在于发现并加以培养。希望各位家长能结合自己孩子的特点，因材施教，共同帮助孩子成长进步。</p>';
+
+      var s_plan = '<p>各位家长，接下来我来介绍一下' + semester + '各学科的教学安排与重点：</p>';
+      s_plan += '<h2 style="font-size:16px;margin:12px 0 8px;font-weight:700;">语文学科</h2>';
+      s_plan += '<p>重点培养阅读理解能力与写作表达能力，加强古诗词积累与运用。</p>';
+      s_plan += '<h2 style="font-size:16px;margin:12px 0 8px;font-weight:700;">数学学科</h2>';
+      s_plan += '<p>注重基础计算能力与逻辑思维培养，加强应用题分析与解决能力训练。</p>';
+      s_plan += '<h2 style="font-size:16px;margin:12px 0 8px;font-weight:700;">英语学科</h2>';
+      s_plan += '<p>强化听说读写综合能力培养，增加口语表达与阅读拓展训练。</p>';
+      s_plan += '<h2 style="font-size:16px;margin:12px 0 8px;font-weight:700;">其他学科</h2>';
+      s_plan += '<p>音体美及综合实践课程注重素养培育，促进学生全面发展与个性特长培养。</p>';
+      s_plan += '<p>' + semester + '教学重点：</p>';
+      s_plan += '<ul>';
+      s_plan += '<li>系统梳理本学期核心知识点，帮助学生构建完整的知识体系</li><li>加强学法指导，培养学生自主学习能力和良好的学习习惯</li><li>注重分层教学，针对不同层次学生制定个性化提升方案</li><li>加强学科实践活动，提升学生综合运用知识解决问题的能力</li>';
+      s_plan += '</ul>';
+
+      var s_cooperation = '<p>孩子的教育需要学校和家庭的共同努力。在此，我向各位家长提出以下几点配合建议：</p>';
+      s_cooperation += '<h2 style="font-size:16px;margin:12px 0 8px;font-weight:700;">作息与时间管理</h2>';
+      s_cooperation += '<ul><li>确保孩子每天有充足的睡眠时间（建议8小时以上）</li><li>帮助孩子制定合理的学习计划，培养时间管理意识</li><li>控制孩子使用电子产品的时间，引导健康使用习惯</li></ul>';
+      s_cooperation += '<h2 style="font-size:16px;margin:12px 0 8px;font-weight:700;">家庭学习指导</h2>';
+      s_cooperation += '<ul><li>每天抽时间关注孩子的作业完成情况，适度辅导但不要包办代替</li><li>为孩子营造良好的家庭学习氛围，以身作则树立榜样</li><li>多与孩子进行学习方面的沟通，了解他们的困惑与需求</li><li>鼓励孩子多阅读课外书籍，拓宽知识视野，培养阅读习惯</li></ul>';
+      s_cooperation += '<h2 style="font-size:16px;margin:12px 0 8px;font-weight:700;">沟通与心理关怀</h2>';
+      s_cooperation += '<ul><li>关注孩子的情绪变化，及时进行心理疏导与关怀</li><li>多给予孩子积极的鼓励与肯定，增强自信心与学习动力</li><li>建立平等对话的亲子关系，倾听孩子的想法与感受</li><li>避免过度施压，关注孩子心理健康与承受能力</li></ul>';
+      s_cooperation += '<h2 style="font-size:16px;margin:12px 0 8px;font-weight:700;">家校协同配合</h2>';
+      s_cooperation += '<ul><li>积极配合学校和班级的工作要求，关注班级通知与消息</li><li>主动与老师沟通孩子在家和在校的表现，形成教育合力</li><li>积极参加学校组织的各类家长活动和开放日</li><li>如有任何问题或建议，欢迎随时与老师联系沟通</li></ul>';
+
+      var s_qa = '<p>各位家长，以上是我今天的发言内容。接下来，我们进入家长答疑环节。</p>';
+      s_qa += '<p>在座的各位家长在教育孩子的过程中，一定有很多经验和心得，也会有一些困惑和疑问。现在我把时间交给大家，欢迎各位畅所欲言：</p>';
+      s_qa += '<ul>';
+      s_qa += '<li>关于孩子学习习惯培养方面的问题</li><li>关于学科辅导与作业指导方面的问题</li><li>关于孩子心理健康与情绪管理方面的问题</li><li>关于家校沟通与配合方面的建议</li><li>其他您关心的问题</li>';
+      s_qa += '</ul><p>（家长提问，教师逐一耐心解答，做好记录并在会后整理反馈）</p>';
+      s_qa += '<p>感谢各位家长的积极提问和宝贵意见！针对大家提出的共性问题，我会整理后在班级群中进行统一回复；对于个性化问题，请会后单独与我沟通，我会尽我所能提供帮助。</p>';
+
+      var s_ending = '<p>尊敬的各位家长，今天的家长会到此即将接近尾声。</p>';
+      s_ending += '<p>' + purpose + '这是我们今天家长会的核心目的，也是我在接下来的工作中会重点关注的方面。</p>';
+      s_ending += '<p>每一个孩子的成长都倾注了家庭和学校共同的心血。教育是一场长跑，需要我们有足够的耐心和智慧，让我们携手同行，用爱与责任共同托起明天的太阳，为孩子的健康成长保驾护航！</p>';
+      s_ending += '<p>最后，再次感谢各位家长的到来与支持！如果您在会后有任何问题或建议，欢迎随时与我联系沟通。期待我们携手合作，共同见证孩子们的成长与进步！</p>';
+      s_ending += '<p>祝各位家长身体健康，工作顺利，阖家幸福！</p>';
+      s_ending += '<p style="text-align:right;margin-top:16px;">' + teacher + '</p>';
+      s_ending += '<p style="text-align:right;">' + new Date().getFullYear() + '年</p>';
+
+      var contentHTML = '<h2 style="font-size:16px;margin:18px 0 8px;font-weight:700;">开场白</h2>' + s_intro;
+      contentHTML += '<h2 style="font-size:16px;margin:18px 0 8px;font-weight:700;">一、开场问候</h2>' + s_greeting;
+      contentHTML += '<h2 style="font-size:16px;margin:18px 0 8px;font-weight:700;">二、学情反馈</h2>' + s_feedback;
+      contentHTML += '<h2 style="font-size:16px;margin:18px 0 8px;font-weight:700;">三、教学计划</h2>' + s_plan;
+      contentHTML += '<h2 style="font-size:16px;margin:18px 0 8px;font-weight:700;">四、家校配合建议</h2>' + s_cooperation;
+      contentHTML += '<h2 style="font-size:16px;margin:18px 0 8px;font-weight:700;">五、答疑环节</h2>' + s_qa;
+      contentHTML += '<h2 style="font-size:16px;margin:18px 0 8px;font-weight:700;">六、结束语</h2>' + s_ending;
+
+      // 更新历史记录
+      updateHistoryContent(historyId, contentHTML);
+      // 保存并跳转
+      sessionStorage.setItem('speechResult', JSON.stringify({ title: gradeSemester + '家长会发言稿', content: contentHTML }));
+      var resultWin = window.open('speech-result.html', '_blank');
+      if (!resultWin) { alert('请允许弹出窗口后重试'); }
+    }
 
     // ====== 打开校园活动策划参数表单窗口 ======
     function openEventFormWindow(win, parsed, historyId) {
@@ -1989,98 +2072,77 @@
       fullHTML += 'p+="<div style=\'display:flex;gap:8px;align-items:center;\'>";';
       fullHTML += 'p+="<button onclick=\'reGenEvent()\' style=\'background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:#fff;padding:4px 12px;border-radius:6px;font-size:12px;cursor:pointer;\'>🔄 重新生成</button>";';
       fullHTML += 'p+="<button onclick=\'downloadEvent()\' style=\'background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:#fff;padding:4px 12px;border-radius:6px;font-size:12px;cursor:pointer;\'>⬇ 下载</button>";';
-      fullHTML += 'p+="<button onclick=\'newEvent()\' style=\'background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:#fff;padding:4px 12px;border-radius:6px;font-size:12px;cursor:pointer;\'>➕ 新建</button>";';
-      fullHTML += 'p+="<button onclick=\'copyEvent()\' style=\'background:rgba(255,255,255,.9);border:1px solid rgba(200,200,200,.4);color:#1B5EA7;padding:4px 12px;border-radius:6px;font-size:12px;cursor:pointer;font-weight:600;\'>📋 复制内容</button>";';
+      fullHTML += 'p+="<button onclick=\'saveEvent()\' style=\'background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:#fff;padding:4px 12px;border-radius:6px;font-size:12px;cursor:pointer;\'>💾 保存</button>";';
+      fullHTML += 'p+="<button onclick=\'editEvent()\' style=\'background:rgba(255,255,255,.9);border:1px solid rgba(200,200,200,.4);color:#1B5EA7;padding:4px 12px;border-radius:6px;font-size:12px;cursor:pointer;font-weight:600;\'>✏️ 编辑</button>";';
       fullHTML += 'p+="</div></div>";';
 
       // ===== 活动基本信息 =====
       fullHTML += 'var s_basic="";';
-      fullHTML += 's_basic+="<div style=\'display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:4px;\'>";';
-      fullHTML += 's_basic+="<div style=\'background:#F8FBFF;border:1px solid #D8E2EE;border-radius:10px;padding:12px 16px;\'><div style=\'font-size:11px;color:#999;font-weight:600;margin-bottom:4px;\'>活动主题</div><div style=\'font-size:14px;color:#1a1a2e;font-weight:600;\'>"+theme+"</div></div>";';
-      fullHTML += 's_basic+="<div style=\'background:#F8FBFF;border:1px solid #D8E2EE;border-radius:10px;padding:12px 16px;\'><div style=\'font-size:11px;color:#999;font-weight:600;margin-bottom:4px;\'>活动对象</div><div style=\'font-size:14px;color:#1a1a2e;font-weight:600;\'>"+target+"</div></div>";';
-      fullHTML += 's_basic+="</div>";';
-      fullHTML += 's_basic+="<div style=\'background:#F8FBFF;border:1px solid #D8E2EE;border-radius:10px;padding:12px 16px;margin-bottom:4px;\'><div style=\'font-size:11px;color:#999;font-weight:600;margin-bottom:4px;\'>活动目标</div><div style=\'font-size:14px;color:#1a1a2e;line-height:1.7;\'>"+goals+"</div></div>";';
-      fullHTML += 's_basic+="<div style=\'display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;\'>";';
-      fullHTML += 's_basic+="<div style=\'background:#F8FBFF;border:1px solid #D8E2EE;border-radius:10px;padding:12px 16px;\'><div style=\'font-size:11px;color:#999;font-weight:600;margin-bottom:4px;\'>时间与规模</div><div style=\'font-size:14px;color:#1a1a2e;\'>"+(datetime||"待定")+"</div></div>";';
-      fullHTML += 's_basic+="<div style=\'background:#F8FBFF;border:1px solid #D8E2EE;border-radius:10px;padding:12px 16px;\'><div style=\'font-size:11px;color:#999;font-weight:600;margin-bottom:4px;\'>活动地点</div><div style=\'font-size:14px;color:#1a1a2e;\'>"+location+"</div></div>";';
-      fullHTML += 's_basic+="<div style=\'background:#F8FBFF;border:1px solid #D8E2EE;border-radius:10px;padding:12px 16px;\'><div style=\'font-size:11px;color:#999;font-weight:600;margin-bottom:4px;\'>活动形式</div><div style=\'font-size:14px;color:#1a1a2e;\'>"+(forms||"待定")+"</div></div>";';
-      fullHTML += 's_basic+="</div>";';
+      fullHTML += 's_basic+="<h2>活动主题</h2><p>"+theme+"</p>";';
+      fullHTML += 's_basic+="<h2>活动对象</h2><p>"+target+"</p>";';
+      fullHTML += 's_basic+="<h2>活动目标</h2><p>"+goals+"</p>";';
+      fullHTML += 's_basic+="<h2>时间与规模</h2><p>"+(datetime||"待定")+"</p>";';
+      fullHTML += 's_basic+="<h2>活动地点</h2><p>"+location+"</p>";';
+      fullHTML += 's_basic+="<h2>活动形式</h2><p>"+(forms||"待定")+"</p>";';
 
       // ===== 组织分工 =====
       fullHTML += 'var s_org="";';
-      fullHTML += 's_org+="<div style=\'margin-bottom:8px;\'><div style=\'font-size:13px;font-weight:700;color:#1B5EA7;margin-bottom:8px;\'>（一）领导小组</div>";';
-      fullHTML += 's_org+="<div style=\'background:#FAFAFA;border:1px solid #E8EEF4;border-radius:8px;padding:12px 16px;margin-bottom:8px;\'>";';
-      fullHTML += 's_org+="<div style=\'font-size:13px;font-weight:600;color:#333;margin-bottom:6px;\'>组长：</div><div style=\'font-size:13px;color:#555;line-height:1.7;\'>负责活动整体统筹与决策，协调各部门工作，把控活动整体方向与进度。</div></div>";';
-      fullHTML += 's_org+="<div style=\'background:#FAFAFA;border:1px solid #E8EEF4;border-radius:8px;padding:12px 16px;margin-bottom:8px;\'>";';
-      fullHTML += 's_org+="<div style=\'font-size:13px;font-weight:600;color:#333;margin-bottom:6px;\'>副组长：</div><div style=\'font-size:13px;color:#555;line-height:1.7;\'>协助组长开展工作，负责具体事务的落实与监督，及时向组长汇报进展。</div></div>";';
-      fullHTML += 's_org+="<div style=\'background:#FAFAFA;border:1px solid #E8EEF4;border-radius:8px;padding:12px 16px;\'>";';
-      fullHTML += 's_org+="<div style=\'font-size:13px;font-weight:600;color:#333;margin-bottom:6px;\'>组员：</div><div style=\'font-size:13px;color:#555;line-height:1.7;\'>负责各项具体工作的执行与跟进，配合组长与副组长完成活动各环节任务。</div></div></div>";';
-      fullHTML += 's_org+="<div style=\'margin-bottom:8px;\'><div style=\'font-size:13px;font-weight:700;color:#1B5EA7;margin-bottom:8px;\'>（二）执行小组</div>";';
-      fullHTML += 's_org+="<div style=\'display:grid;grid-template-columns:1fr 1fr;gap:10px;\'>";';
-      fullHTML += 's_org+="<div style=\'background:#FAFAFA;border:1px solid #E8EEF4;border-radius:8px;padding:10px 14px;\'><div style=\'font-size:12px;font-weight:600;color:#1B5EA7;margin-bottom:4px;\'>📝 宣传组</div><div style=\'font-size:12px;color:#555;line-height:1.6;\'>负责活动前期宣传、氛围营造、拍照记录及后期报道撰写。</div></div>";';
-      fullHTML += 's_org+="<div style=\'background:#FAFAFA;border:1px solid #E8EEF4;border-radius:8px;padding:10px 14px;\'><div style=\'font-size:12px;font-weight:600;color:#1B5EA7;margin-bottom:4px;\'>🔧 后勤组</div><div style=\'font-size:12px;color:#555;line-height:1.6;\'>负责场地布置、设备调试、活动道具准备及现场物资管理。</div></div>";';
-      fullHTML += 's_org+="<div style=\'background:#FAFAFA;border:1px solid #E8EEF4;border-radius:8px;padding:10px 14px;\'><div style=\'font-size:12px;font-weight:600;color:#1B5EA7;margin-bottom:4px;\'>🎤 主持组</div><div style=\'font-size:12px;color:#555;line-height:1.6;\'>负责活动主持词撰写、主持人培训及现场流程引导。</div></div>";';
-      fullHTML += 's_org+="<div style=\'background:#FAFAFA;border:1px solid #E8EEF4;border-radius:8px;padding:10px 14px;\'><div style=\'font-size:12px;font-weight:600;color:#1B5EA7;margin-bottom:4px;\'>🏥 医疗组</div><div style=\'font-size:12px;color:#555;line-height:1.6;\'>负责现场医疗保障，准备常用药品及急救设备，及时处理突发状况。</div></div>";';
-      fullHTML += 's_org+="<div style=\'background:#FAFAFA;border:1px solid #E8EEF4;border-radius:8px;padding:10px 14px;\'><div style=\'font-size:12px;font-weight:600;color:#1B5EA7;margin-bottom:4px;\'>🧑‍🏫 教师协助组</div><div style=\'font-size:12px;color:#555;line-height:1.6;\'>负责组织学生、维护秩序，配合各小组完成活动执行与现场管理。</div></div>";';
-      fullHTML += 's_org+="<div style=\'background:#FAFAFA;border:1px solid #E8EEF4;border-radius:8px;padding:10px 14px;\'><div style=\'font-size:12px;font-weight:600;color:#1B5EA7;margin-bottom:4px;\'>📋 评比组</div><div style=\'font-size:12px;color:#555;line-height:1.6;\'>负责活动评分标准制定、评委安排及比赛结果的统计与公示。</div></div>";';
-      fullHTML += 's_org+="</div></div>";';
+      fullHTML += 's_org+="<p><strong>（一）领导小组</strong></p>";';
+      fullHTML += 's_org+="<p><strong>组长：</strong>负责活动整体统筹与决策，协调各部门工作，把控活动整体方向与进度。</p>";';
+      fullHTML += 's_org+="<p><strong>副组长：</strong>协助组长开展工作，负责具体事务的落实与监督，及时向组长汇报进展。</p>";';
+      fullHTML += 's_org+="<p><strong>组员：</strong>负责各项具体工作的执行与跟进，配合组长与副组长完成活动各环节任务。</p>";';
+      fullHTML += 's_org+="<p><strong>（二）执行小组</strong></p>";';
+      fullHTML += 's_org+="<ul>";';
+      fullHTML += 's_org+="<li><strong>宣传组：</strong>负责活动前期宣传、氛围营造、拍照记录及后期报道撰写。</li>";';
+      fullHTML += 's_org+="<li><strong>后勤组：</strong>负责场地布置、设备调试、活动道具准备及现场物资管理。</li>";';
+      fullHTML += 's_org+="<li><strong>主持组：</strong>负责活动主持词撰写、主持人培训及现场流程引导。</li>";';
+      fullHTML += 's_org+="<li><strong>医疗组：</strong>负责现场医疗保障，准备常用药品及急救设备，及时处理突发状况。</li>";';
+      fullHTML += 's_org+="<li><strong>教师协助组：</strong>负责组织学生、维护秩序，配合各小组完成活动执行与现场管理。</li>";';
+      fullHTML += 's_org+="<li><strong>评比组：</strong>负责活动评分标准制定、评委安排及比赛结果的统计与公示。</li>";';
+      fullHTML += 's_org+="</ul>";';
 
       // ===== 活动流程 =====
       fullHTML += 'var s_flow="";';
-      fullHTML += 's_flow+="<div style=\'display:flex;align-items:flex-start;gap:0;\'>";';
-      fullHTML += 's_flow+="<div style=\'width:100px;background:#1B5EA7;color:#fff;padding:10px 12px;border-radius:8px 0 0 8px;text-align:center;flex-shrink:0;\'><div style=\'font-size:12px;font-weight:600;\'>前期准备</div><div style=\'font-size:11px;opacity:0.85;margin-top:2px;\'>活动前2周</div></div>";';
-      fullHTML += 's_flow+="<div style=\'flex:1;border:1px solid #D8E2EE;border-left:none;border-radius:0 8px 8px 0;padding:10px 14px;background:#fff;\'><div style=\'font-size:13px;color:#333;line-height:1.7;\'>确定活动主题与方案，成立筹备小组；完成活动申报与审批；准备活动所需物资与设备；做好活动宣传与学生动员工作。</div></div></div>";';
-      fullHTML += 's_flow+="<div style=\'display:flex;align-items:flex-start;gap:0;margin-top:10px;\'>";';
-      fullHTML += 's_flow+="<div style=\'width:100px;background:#1565C0;color:#fff;padding:10px 12px;border-radius:8px 0 0 8px;text-align:center;flex-shrink:0;\'><div style=\'font-size:12px;font-weight:600;\'>活动当天</div><div style=\'font-size:11px;opacity:0.85;margin-top:2px;\'>活动当日</div></div>";';
-      fullHTML += 's_flow+="<div style=\'flex:1;border:1px solid #D8E2EE;border-left:none;border-radius:0 8px 8px 0;padding:10px 14px;background:#fff;\'><div style=\'font-size:13px;color:#333;line-height:1.7;\'>08:00 前完成场地布置与设备调试；08:30 参加人员签到入场；09:00 活动正式开始，主持人开场，依次开展各环节；12:00 活动结束，合影留念；12:30 场地整理与物资回收。</div></div></div>";';
-      fullHTML += 's_flow+="<div style=\'display:flex;align-items:flex-start;gap:0;margin-top:10px;\'>";';
-      fullHTML += 's_flow+="<div style=\'width:100px;background:#0D47A1;color:#fff;padding:10px 12px;border-radius:8px 0 0 8px;text-align:center;flex-shrink:0;\'><div style=\'font-size:12px;font-weight:600;\'>后期收尾</div><div style=\'font-size:11px;opacity:0.85;margin-top:2px;\'>活动后1周</div></div>";';
-      fullHTML += 's_flow+="<div style=\'flex:1;border:1px solid #D8E2EE;border-left:none;border-radius:0 8px 8px 0;padding:10px 14px;background:#fff;\'><div style=\'font-size:13px;color:#333;line-height:1.7;\'>活动总结与资料归档；评选表彰优秀个人与集体；撰写活动通讯稿并进行宣传报道；收集师生反馈意见，持续改进活动质量。</div></div></div>";';
+      fullHTML += 's_flow+="<p><strong>前期准备（活动前2周）</strong></p>";';
+      fullHTML += 's_flow+="<p>确定活动主题与方案，成立筹备小组；完成活动申报与审批；准备活动所需物资与设备；做好活动宣传与学生动员工作。</p>";';
+      fullHTML += 's_flow+="<p><strong>活动当天（活动当日）</strong></p>";';
+      fullHTML += 's_flow+="<p>08:00 前完成场地布置与设备调试；08:30 参加人员签到入场；09:00 活动正式开始，主持人开场，依次开展各环节；12:00 活动结束，合影留念；12:30 场地整理与物资回收。</p>";';
+      fullHTML += 's_flow+="<p><strong>后期收尾（活动后1周）</strong></p>";';
+      fullHTML += 's_flow+="<p>活动总结与资料归档；评选表彰优秀个人与集体；撰写活动通讯稿并进行宣传报道；收集师生反馈意见，持续改进活动质量。</p>";';
 
       // ===== 物资清单 =====
       fullHTML += 'var s_materials="";';
-      fullHTML += 's_materials+="<table style=\'width:100%;border-collapse:collapse;font-size:13px;\'>";';
-      fullHTML += 's_materials+="<thead><tr style=\'background:#EEF4FF;\'><th style=\'padding:9px 12px;text-align:left;color:#1B5EA7;font-weight:600;border-bottom:2px solid #D8E2EE;\'>类别</th><th style=\'padding:9px 12px;text-align:left;color:#1B5EA7;font-weight:600;border-bottom:2px solid #D8E2EE;\'>物资名称</th><th style=\'padding:9px 12px;text-align:center;color:#1B5EA7;font-weight:600;border-bottom:2px solid #D8E2EE;\'>数量</th><th style=\'padding:9px 12px;text-align:center;color:#1B5EA7;font-weight:600;border-bottom:2px solid #D8E2EE;\'>备注</th></tr></thead>";';
-      fullHTML += 's_materials+="<tbody>";';
-      fullHTML += 's_materials+="<tr><td style=\'padding:8px 12px;border-bottom:1px solid #F0F4F8;color:#333;font-weight:600;\'>音响设备</td><td style=\'padding:8px 12px;border-bottom:1px solid #F0F4F8;color:#555;\'>话筒、音响、投影仪</td><td style=\'padding:8px 12px;border-bottom:1px solid #F0F4F8;text-align:center;color:#555;\'>若干</td><td style=\'padding:8px 12px;border-bottom:1px solid #F0F4F8;text-align:center;color:#555;\'>提前调试</td></tr>";';
-      fullHTML += 's_materials+="<tr><td style=\'padding:8px 12px;border-bottom:1px solid #F0F4F8;color:#333;font-weight:600;\'>场地布置</td><td style=\'padding:8px 12px;border-bottom:1px solid #F0F4F8;color:#555;\'>横幅、气球、彩旗、展板</td><td style=\'padding:8px 12px;border-bottom:1px solid #F0F4F8;text-align:center;color:#555;\'>按需准备</td><td style=\'padding:8px 12px;border-bottom:1px solid #F0F4F8;text-align:center;color:#555;\'>提前一天布置</td></tr>";';
-      fullHTML += 's_materials+="<tr><td style=\'padding:8px 12px;border-bottom:1px solid #F0F4F8;color:#333;font-weight:600;\'>文具用品</td><td style=\'padding:8px 12px;border-bottom:1px solid #F0F4F8;color:#555;\'>奖状、证书、笔、记分册</td><td style=\'padding:8px 12px;border-bottom:1px solid #F0F4F8;text-align:center;color:#555;\'>按参与人数</td><td style=\'padding:8px 12px;border-bottom:1px solid #F0F4F8;text-align:center;color:#555;\'>提前印刷</td></tr>";';
-      fullHTML += 's_materials+="<tr><td style=\'padding:8px 12px;border-bottom:1px solid #F0F4F8;color:#333;font-weight:600;\'>医疗保障</td><td style=\'padding:8px 12px;border-bottom:1px solid #F0F4F8;color:#555;\'>急救药箱、矿泉水、纸巾</td><td style=\'padding:8px 12px;border-bottom:1px solid #F0F4F8;text-align:center;color:#555;\'>若干</td><td style=\'padding:8px 12px;border-bottom:1px solid #F0F4F8;text-align:center;color:#555;\'>设置在观众席旁</td></tr>";';
-      fullHTML += 's_materials+="<tr><td style=\'padding:8px 12px;color:#333;font-weight:600;\'>奖品证书</td><td style=\'padding:8px 12px;color:#555;\'>奖状、奖牌、小礼品</td><td style=\'padding:8px 12px;text-align:center;color:#555;\'>按奖项设置</td><td style=\'padding:8px 12px;text-align:center;color:#555;\'>提前采购到位</td></tr>";';
-      fullHTML += 's_materials+="</tbody></table>";';
+      fullHTML += 's_materials+="<ul>";';
+      fullHTML += 's_materials+="<li><strong>音响设备：</strong>话筒、音响、投影仪（若干，提前调试）</li>";';
+      fullHTML += 's_materials+="<li><strong>场地布置：</strong>横幅、气球、彩旗、展板（按需准备，提前一天布置）</li>";';
+      fullHTML += 's_materials+="<li><strong>文具用品：</strong>奖状、证书、笔、记分册（按参与人数，提前印刷）</li>";';
+      fullHTML += 's_materials+="<li><strong>医疗保障：</strong>急救药箱、矿泉水、纸巾（若干，设置在观众席旁）</li>";';
+      fullHTML += 's_materials+="<li><strong>奖品证书：</strong>奖状、奖牌、小礼品（按奖项设置，提前采购到位）</li>";';
+      fullHTML += 's_materials+="</ul>";';
 
       // ===== 安全保障 =====
       fullHTML += 'var s_safety="";';
-      fullHTML += 's_safety+="<div style=\'background:#FFF8F8;border:1px solid #FFCDD2;border-radius:10px;padding:14px 16px;margin-bottom:10px;\'>";';
-      fullHTML += 's_safety+="<div style=\'font-size:13px;font-weight:700;color:#C62828;margin-bottom:8px;\'>⚠️ 场地安全</div>";';
-      fullHTML += 's_safety+="<div style=\'font-size:13px;color:#555;line-height:1.7;\'>活动前对场地进行全面安全检查，排除用电隐患、消防通道堵塞、地面积水等不安全因素；确保活动区域地面平整无障碍物；活动期间保持场地通风与照明充足。</div></div>";';
-      fullHTML += 's_safety+="<div style=\'background:#FFF8F8;border:1px solid #FFCDD2;border-radius:10px;padding:14px 16px;margin-bottom:10px;\'>";';
-      fullHTML += 's_safety+="<div style=\'font-size:13px;font-weight:700;color:#C62828;margin-bottom:8px;\'>👥 人员管理</div>";';
-      fullHTML += 's_safety+="<div style=\'font-size:13px;color:#555;line-height:1.7;\'>严格控制活动参与人数，安排专人负责现场秩序维护；各班班主任全程随班负责，组织学生有序参与各项活动；设置安全引导员，引导学生安全上下场，防止拥挤踩踏。</div></div>";';
-      fullHTML += 's_safety+="<div style=\'background:#FFF8F8;border:1px solid #FFCDD2;border-radius:10px;padding:14px 16px;margin-bottom:10px;\'>";';
-      fullHTML += 's_safety+="<div style=\'font-size:13px;font-weight:700;color:#C62828;margin-bottom:8px;\'>🏥 医疗保障</div>";';
-      fullHTML += 's_safety+="<div style=\'font-size:13px;color:#555;line-height:1.7;\'>提前与校医室沟通，配备专业医护人员值守；准备常用急救药品、创可贴、消毒液等医疗物资；制定受伤应急处置流程，发现学生受伤立即进行处置并送医。</div></div>";';
-      fullHTML += 's_safety+="<div style=\'background:#FFF8F8;border:1px solid #FFCDD2;border-radius:10px;padding:14px 16px;\'>";';
-      fullHTML += 's_safety+="<div style=\'font-size:13px;font-weight:700;color:#C62828;margin-bottom:8px;\'>🚨 消防安全</div>";';
-      fullHTML += 's_safety+="<div style=\'font-size:13px;color:#555;line-height:1.7;\'>活动期间确保所有消防通道畅通无阻；场地内禁止明火及易燃易爆物品；配备灭火器等消防器材，安排专人熟悉灭火器位置及使用方法。</div></div>";';
+      fullHTML += 's_safety+="<p><strong>场地安全</strong></p>";';
+      fullHTML += 's_safety+="<p>活动前对场地进行全面安全检查，排除用电隐患、消防通道堵塞、地面积水等不安全因素；确保活动区域地面平整无障碍物；活动期间保持场地通风与照明充足。</p>";';
+      fullHTML += 's_safety+="<p><strong>人员管理</strong></p>";';
+      fullHTML += 's_safety+="<p>严格控制活动参与人数，安排专人负责现场秩序维护；各班班主任全程随班负责，组织学生有序参与各项活动；设置安全引导员，引导学生安全上下场，防止拥挤踩踏。</p>";';
+      fullHTML += 's_safety+="<p><strong>医疗保障</strong></p>";';
+      fullHTML += 's_safety+="<p>提前与校医室沟通，配备专业医护人员值守；准备常用急救药品、创可贴、消毒液等医疗物资；制定受伤应急处置流程，发现学生受伤立即进行处置并送医。</p>";';
+      fullHTML += 's_safety+="<p><strong>消防安全</strong></p>";';
+      fullHTML += 's_safety+="<p>活动期间确保所有消防通道畅通无阻；场地内禁止明火及易燃易爆物品；配备灭火器等消防器材，安排专人熟悉灭火器位置及使用方法。</p>";';
 
       // ===== 应急预案 =====
       fullHTML += 'var s_emergency="";';
-      fullHTML += 's_emergency+="<div style=\'border-left:4px solid #E53935;padding-left:14px;margin-bottom:12px;\'>";';
-      fullHTML += 's_emergency+="<div style=\'font-size:13px;font-weight:700;color:#C62828;margin-bottom:6px;\'>1. 突发疾病应急处置</div>";';
-      fullHTML += 's_emergency+="<div style=\'font-size:13px;color:#555;line-height:1.7;\'>发现学生突发疾病或身体不适，立即通知现场医护人员进行初步处置；如情况严重，在第一时间拨打120急救电话，同时联系学生家长并向学校领导汇报；安排专人护送就医，做好现场秩序维护。</div></div>";';
-      fullHTML += 's_emergency+="<div style=\'border-left:4px solid #F57C00;padding-left:14px;margin-bottom:12px;\'>";';
-      fullHTML += 's_emergency+="<div style=\'font-size:13px;font-weight:700;color:#E65100;margin-bottom:6px;\'>2. 意外伤害应急处置</div>";';
-      fullHTML += 's_emergency+="<div style=\'font-size:13px;color:#555;line-height:1.7;\'>发生意外伤害时，立即停止相关活动，保护现场；现场医护人员进行应急处理；根据伤情决定是否送医，同时做好伤情记录；及时与家长沟通，妥善处理后续事宜。</div></div>";';
-      fullHTML += 's_emergency+="<div style=\'border-left:4px solid #1565C0;padding-left:14px;margin-bottom:12px;\'>";';
-      fullHTML += 's_emergency+="<div style=\'font-size:13px;font-weight:700;color:#1565C0;margin-bottom:6px;\'>3. 设备故障应急处置</div>";';
-      fullHTML += 's_emergency+="<div style=\'font-size:13px;color:#555;line-height:1.7;\'>活动期间若音响、投影等设备出现故障，立即启用备用设备；如短时间内无法修复，由主持人灵活调整活动顺序，优先保障正常教学秩序；安排专人负责设备维护，提前做好设备调试与备用方案。</div></div>";';
-      fullHTML += 's_emergency+="<div style=\'border-left:4px solid #2E7D32;padding-left:14px;margin-bottom:12px;\'>";';
-      fullHTML += 's_emergency+="<div style=\'font-size:13px;font-weight:700;color:#2E7D32;margin-bottom:6px;\'>4. 恶劣天气应急处置</div>";';
-      fullHTML += 's_emergency+="<div style=\'font-size:13px;color:#555;line-height:1.7;\'>密切注意活动当天的天气预报；如遇恶劣天气（暴雨、大风、雷电等），由领导小组研判后决定是否延期或改换室内场地；已开始的活动中遇突发天气，迅速组织学生有序转移至安全区域，待天气好转后再行恢复。</div></div>";';
-      fullHTML += 's_emergency+="<div style=\'border-left:4px solid #7B1FA2;padding-left:14px;\'>";';
-      fullHTML += 's_emergency+="<div style=\'font-size:13px;font-weight:700;color:#7B1FA2;margin-bottom:6px;\'>5. 人员走失应急处置</div>";';
-      fullHTML += 's_emergency+="<div style=\'font-size:13px;color:#555;line-height:1.7;\'>发现学生走失后，立即通知各区域负责人协同寻找；安排专人到校门口守候，防止学生自行离校；如短时间内未找到，联系家长确认学生是否已自行回家，并及时向学校领导汇报。</div></div>";';
+      fullHTML += 's_emergency+="<p><strong>1. 突发疾病应急处置</strong></p>";';
+      fullHTML += 's_emergency+="<p>发现学生突发疾病或身体不适，立即通知现场医护人员进行初步处置；如情况严重，在第一时间拨打120急救电话，同时联系学生家长并向学校领导汇报；安排专人护送就医，做好现场秩序维护。</p>";';
+      fullHTML += 's_emergency+="<p><strong>2. 意外伤害应急处置</strong></p>";';
+      fullHTML += 's_emergency+="<p>发生意外伤害时，立即停止相关活动，保护现场；现场医护人员进行应急处理；根据伤情决定是否送医，同时做好伤情记录；及时与家长沟通，妥善处理后续事宜。</p>";';
+      fullHTML += 's_emergency+="<p><strong>3. 设备故障应急处置</strong></p>";';
+      fullHTML += 's_emergency+="<p>活动期间若音响、投影等设备出现故障，立即启用备用设备；如短时间内无法修复，由主持人灵活调整活动顺序，优先保障正常教学秩序；安排专人负责设备维护，提前做好设备调试与备用方案。</p>";';
+      fullHTML += 's_emergency+="<p><strong>4. 恶劣天气应急处置</strong></p>";';
+      fullHTML += 's_emergency+="<p>密切注意活动当天的天气预报；如遇恶劣天气（暴雨、大风、雷电等），由领导小组研判后决定是否延期或改换室内场地；已开始的活动中遇突发天气，迅速组织学生有序转移至安全区域，待天气好转后再行恢复。</p>";';
+      fullHTML += 's_emergency+="<p><strong>5. 人员走失应急处置</strong></p>";';
+      fullHTML += 's_emergency+="<p>发现学生走失后，立即通知各区域负责人协同寻找；安排专人到校门口守候，防止学生自行离校；如短时间内未找到，联系家长确认学生是否已自行回家，并及时向学校领导汇报。</p>";';
 
       // ===== 构建内容区 =====
       fullHTML += 'var allContent={};';
@@ -2095,15 +2157,18 @@
       fullHTML += 'for(var idx=0;idx<structs.length;idx++){';
       fullHTML += 'var s=structs[idx];';
       fullHTML += 'if(allContent[s]){';
-      fullHTML += 'p+="<h2 style=\'font-size:15px;color:#1B5EA7;margin:20px 0 10px;font-weight:700;border-left:3px solid #1B5EA7;padding-left:8px;\'>"+allContent[s].title+"</h2>"+allContent[s].content;';
+      fullHTML += 'p+="<h2>"+allContent[s].title+"</h2>"+allContent[s].content;';
       fullHTML += '}else{';
-      fullHTML += 'p+="<h2 style=\'font-size:15px;color:#1B5EA7;margin:20px 0 10px;font-weight:700;border-left:3px solid #1B5EA7;padding-left:8px;\'>"+s+"</h2><p style=\'color:#888;font-size:13px;\'>（"+s+"具体内容可根据实际活动情况补充）</p>";';
+      fullHTML += 'p+="<h2>"+s+"</h2><p>（"+s+"具体内容可根据实际活动情况补充）</p>";';
       fullHTML += '}}';
       fullHTML += 'if(extra){';
-      fullHTML += 'p+="<h2 style=\'font-size:15px;color:#1B5EA7;margin:20px 0 10px;font-weight:700;border-left:3px solid #1B5EA7;padding-left:8px;\'>附：附加说明</h2><p style=\'font-size:13px;color:#555;line-height:1.8;\'>"+extra.replace(/\\n/g,"<br>")+"</p>";';
+      fullHTML += 'p+="<h2>附：附加说明</h2><p>"+extra.replace(/\\n/g,"<br>")+"</p>";';
       fullHTML += '}';
       fullHTML += 'p+="</div></div></div>";';
       
+      // 重新生成函数
+      fullHTML += 'function reGenEvent(){if(window.opener){window.opener.location.href="index.html";}window.close();}';
+
       // 提取内容部分（去掉外层卡片结构）
       fullHTML += 'var match=p.match(/<div id=\\\'resultBody\\\'[^>]*>([\\s\\S]*)<\\/div>\\s*<\\/div>\\s*<\\/div>\\s*<\\/div>\\s*<\\/div>\\s*$/);';
       fullHTML += 'var contentBody=match?match[1]:p;';
@@ -2272,67 +2337,60 @@
       fullHTML += 'p+="<div style=\'display:flex;gap:8px;align-items:center;\'>";';
       fullHTML += 'p+="<button onclick=\'reGenSpeech()\' style=\'background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:#fff;padding:4px 12px;border-radius:6px;font-size:12px;cursor:pointer;\'>🔄 重新生成</button>";';
       fullHTML += 'p+="<button onclick=\'downloadSpeech()\' style=\'background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:#fff;padding:4px 12px;border-radius:6px;font-size:12px;cursor:pointer;\'>⬇ 下载</button>";';
-      fullHTML += 'p+="<button onclick=\'newSpeech()\' style=\'background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:#fff;padding:4px 12px;border-radius:6px;font-size:12px;cursor:pointer;\'>➕ 新建</button>";';
-      fullHTML += 'p+="<button onclick=\'copySpeech()\' style=\'background:rgba(255,255,255,.9);border:1px solid rgba(200,200,200,.4);color:#1B5EA7;padding:4px 12px;border-radius:6px;font-size:12px;cursor:pointer;font-weight:600;\'>📋 复制内容</button>";';
+      fullHTML += 'p+="<button onclick=\'saveSpeech()\' style=\'background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:#fff;padding:4px 12px;border-radius:6px;font-size:12px;cursor:pointer;\'>💾 保存</button>";';
+      fullHTML += 'p+="<button onclick=\'editSpeech()\' style=\'background:rgba(255,255,255,.9);border:1px solid rgba(200,200,200,.4);color:#1B5EA7;padding:4px 12px;border-radius:6px;font-size:12px;cursor:pointer;font-weight:600;\'>✏️ 编辑</button>";';
       fullHTML += 'p+="</div></div>";';
 
       // 开场白
       fullHTML += 'var s_intro="";';
-      fullHTML += 's_intro+="<p style=\'font-size:14px;color:#555;line-height:2;margin-bottom:12px;\'>尊敬的各位家长朋友们：</p>";';
-      fullHTML += 's_intro+="<p style=\'font-size:14px;color:#555;line-height:2;margin-bottom:12px;\'>大家好！首先非常感谢各位家长在百忙之中抽出时间参加今天的家长会。我是"+teacher+"，今天非常荣幸能够与大家面对面地交流孩子的教育成长问题。</p>";';
-      fullHTML += 's_intro+="<p style=\'font-size:14px;color:#555;line-height:2;margin-bottom:12px;\'>今天我们家长会的主题是「"+meetingTheme+"」，主要想围绕以下几个方面和大家进行深入交流：</p>";';
-      fullHTML += 's_intro+="<ul style=\'font-size:14px;color:#555;line-height:2;padding-left:24px;margin-bottom:12px;\'>";';
+      fullHTML += 's_intro+="<p>尊敬的各位家长朋友们：</p>";';
+      fullHTML += 's_intro+="<p>大家好！首先非常感谢各位家长在百忙之中抽出时间参加今天的家长会。我是"+teacher+"，今天非常荣幸能够与大家面对面地交流孩子的教育成长问题。</p>";';
+      fullHTML += 's_intro+="<p>今天我们家长会的主题是「"+meetingTheme+"」，主要想围绕以下几个方面和大家进行深入交流：</p>";';
+      fullHTML += 's_intro+="<ul>";';
       fullHTML += 's_intro+="<li>班级整体情况介绍</li>";';
       fullHTML += 's_intro+="<li>学期学情分析与反馈</li>";';
       fullHTML += 's_intro+="<li>各学科教学情况与重点</li>";';
       fullHTML += 's_intro+="<li>家校合作的具体建议</li>";';
       fullHTML += 's_intro+="<li>家长互动答疑环节</li>";';
       fullHTML += 's_intro+="</ul>";';
-      fullHTML += 's_intro+="<p style=\'font-size:14px;color:#555;line-height:2;\'>希望今天的交流能够帮助大家更全面地了解孩子在校的表现，也让我们携手为孩子的健康成长创造更好的环境。</p>";';
+      fullHTML += 's_intro+="<p>希望今天的交流能够帮助大家更全面地了解孩子在校的表现，也让我们携手为孩子的健康成长创造更好的环境。</p>";';
 
       // 开场问候
       fullHTML += 'var s_greeting="";';
-      fullHTML += 's_greeting+="<p style=\'font-size:14px;color:#555;line-height:2;margin-bottom:10px;\'>在正式交流之前，我想先向各位家长表达几点感谢：</p>";';
-      fullHTML += 's_greeting+="<p style=\'font-size:14px;color:#555;line-height:2;margin-bottom:10px;\'>第一，感谢各位家长一直以来对学校和班级工作的理解与支持。孩子的教育离不开家庭和学校的紧密配合，正是因为有大家的信任和配合，我们的班级才能不断进步。</p>";';
-      fullHTML += 's_greeting+="<p style=\'font-size:14px;color:#555;line-height:2;margin-bottom:10px;\'>第二，感谢大家今天准时参会。教育孩子是学校和家庭共同的责任，今天大家能够放下手中的事务来参加家长会，体现了对孩子的重视和对学校的信任。</p>";';
-      fullHTML += 's_greeting+="<p style=\'font-size:14px;color:#555;line-height:2;\'>第三，希望各位家长在今天的交流中畅所欲言，积极分享您在家庭教育中的经验和方法，让我们互相学习，共同提高。</p>";';
+      fullHTML += 's_greeting+="<p>在正式交流之前，我想先向各位家长表达几点感谢：</p>";';
+      fullHTML += 's_greeting+="<p>第一，感谢各位家长一直以来对学校和班级工作的理解与支持。孩子的教育离不开家庭和学校的紧密配合，正是因为有大家的信任和配合，我们的班级才能不断进步。</p>";';
+      fullHTML += 's_greeting+="<p>第二，感谢大家今天准时参会。教育孩子是学校和家庭共同的责任，今天大家能够放下手中的事务来参加家长会，体现了对孩子的重视和对学校的信任。</p>";';
+      fullHTML += 's_greeting+="<p>第三，希望各位家长在今天的交流中畅所欲言，积极分享您在家庭教育中的经验和方法，让我们互相学习，共同提高。</p>";';
 
       // 学情反馈
       fullHTML += 'var s_feedback="";';
-      fullHTML += 's_feedback+="<p style=\'font-size:14px;color:#555;line-height:2;margin-bottom:10px;\'>"+classInfo+"</p>";';
-      fullHTML += 's_feedback+="<div style=\'background:#F8FBFF;border:1px solid #D8E2EE;border-radius:10px;padding:14px 16px;margin-bottom:12px;\'>";';
-      fullHTML += 's_feedback+="<div style=\'font-size:13px;font-weight:700;color:#1B5EA7;margin-bottom:8px;\'>📊 班级整体表现</div>";';
-      fullHTML += 's_feedback+="<ul style=\'font-size:13px;color:#555;line-height:2;padding-left:20px;\'>";';
+      fullHTML += 's_feedback+="<p>"+classInfo+"</p>";';
+      fullHTML += 's_feedback+="<p><strong>班级整体表现</strong></p>";';
+      fullHTML += 's_feedback+="<ul>";';
       fullHTML += 's_feedback+="<li>大部分同学学习态度认真，课堂参与度高，能积极举手发言</li>";';
       fullHTML += 's_feedback+="<li>作业完成情况整体良好，但存在个体差异，需要针对性辅导</li>";';
       fullHTML += 's_feedback+="<li>班级凝聚力强，集体活动参与积极，学生之间互帮互助氛围浓厚</li>";';
       fullHTML += 's_feedback+="<li>学生综合素养逐步提升，在各科目学习中都涌现出一批表现优异的学生</li>";';
-      fullHTML += 's_feedback+="</ul></div>";';
-      fullHTML += 's_feedback+="<p style=\'font-size:14px;color:#555;line-height:2;margin-bottom:10px;\'>同时，我们也要客观看待班级中存在的问题：</p>";';
-      fullHTML += 's_feedback+="<ul style=\'font-size:14px;color:#555;line-height:2;padding-left:24px;\'>";';
+      fullHTML += 's_feedback+="</ul>";';
+      fullHTML += 's_feedback+="<p>同时，我们也要客观看待班级中存在的问题：</p>";';
+      fullHTML += 's_feedback+="<ul>";';
       fullHTML += 's_feedback+="<li>部分学生在时间管理和学习计划方面还需加强</li>";';
       fullHTML += 's_feedback+="<li>个别学生课堂注意力集中度有待提高，需要家校协同关注</li>";';
       fullHTML += 's_feedback+="<li>学生在自主学习能力和探究精神方面还有提升空间</li>";';
       fullHTML += 's_feedback+="</ul>";';
-
-      // 学生个例
-      fullHTML += 's_feedback+="<div style=\'background:#FFF9E6;border:1px solid #FFE082;border-radius:10px;padding:14px 16px;margin-top:12px;\'>";';
-      fullHTML += 's_feedback+="<div style=\'font-size:13px;font-weight:700;color:#E65100;margin-bottom:8px;\'>🌟 学生代表案例</div>";';
-      fullHTML += 's_feedback+="<p style=\'font-size:13px;color:#555;line-height:2;margin-bottom:8px;\'>"+examples+"</p>";';
-      fullHTML += 's_feedback+="<p style=\'font-size:13px;color:#555;line-height:2;\'>以上这些案例告诉我们，每个孩子都有自己的闪光点，关键在于发现并加以培养。希望各位家长能结合自己孩子的特点，因材施教，共同帮助孩子成长进步。</p>";';
-      fullHTML += 's_feedback+="</div>";';
+      fullHTML += 's_feedback+="<p><strong>学生代表案例</strong></p>";';
+      fullHTML += 's_feedback+="<p>"+examples+"</p>";';
+      fullHTML += 's_feedback+="<p>以上这些案例告诉我们，每个孩子都有自己的闪光点，关键在于发现并加以培养。希望各位家长能结合自己孩子的特点，因材施教，共同帮助孩子成长进步。</p>";';
 
       // 教学计划
       fullHTML += 'var s_plan="";';
-      fullHTML += 's_plan+="<p style=\'font-size:14px;color:#555;line-height:2;margin-bottom:10px;\'>各位家长，接下来我来介绍一下"+semester+"各学科的教学安排与重点：</p>";';
-      fullHTML += 's_plan+="<div style=\'display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;\'>";';
-      fullHTML += 's_plan+="<div style=\'background:#F8FBFF;border:1px solid #D8E2EE;border-radius:8px;padding:10px 14px;\'><div style=\'font-size:12px;font-weight:600;color:#1B5EA7;margin-bottom:4px;\'>📚 语文学科</div><div style=\'font-size:12px;color:#555;line-height:1.7;\'>重点培养阅读理解能力与写作表达能力，加强古诗词积累与运用。</div></div>";';
-      fullHTML += 's_plan+="<div style=\'background:#F8FBFF;border:1px solid #D8E2EE;border-radius:8px;padding:10px 14px;\'><div style=\'font-size:12px;font-weight:600;color:#1B5EA7;margin-bottom:4px;\'>🔢 数学学科</div><div style=\'font-size:12px;color:#555;line-height:1.7;\'>注重基础计算能力与逻辑思维培养，加强应用题分析与解决能力训练。</div></div>";';
-      fullHTML += 's_plan+="<div style=\'background:#F8FBFF;border:1px solid #D8E2EE;border-radius:8px;padding:10px 14px;\'><div style=\'font-size:12px;font-weight:600;color:#1B5EA7;margin-bottom:4px;\'>🌍 英语学科</div><div style=\'font-size:12px;color:#555;line-height:1.7;\'>强化听说读写综合能力培养，增加口语表达与阅读拓展训练。</div></div>";';
-      fullHTML += 's_plan+="<div style=\'background:#F8FBFF;border:1px solid #D8E2EE;border-radius:8px;padding:10px 14px;\'><div style=\'font-size:12px;font-weight:600;color:#1B5EA7;margin-bottom:4px;\'>🎨 其他学科</div><div style=\'font-size:12px;color:#555;line-height:1.7;\'>音体美及综合实践课程注重素养培育，促进学生全面发展与个性特长培养。</div></div>";';
-      fullHTML += 's_plan+="</div>";';
-      fullHTML += 's_plan+="<p style=\'font-size:14px;color:#555;line-height:2;margin-bottom:10px;\'>"+semester+"教学重点：</p>";';
-      fullHTML += 's_plan+="<ul style=\'font-size:14px;color:#555;line-height:2;padding-left:24px;\'>";';
+      fullHTML += 's_plan+="<p>各位家长，接下来我来介绍一下"+semester+"各学科的教学安排与重点：</p>";';
+      fullHTML += 's_plan+="<p><strong>语文学科：</strong>重点培养阅读理解能力与写作表达能力，加强古诗词积累与运用。</p>";';
+      fullHTML += 's_plan+="<p><strong>数学学科：</strong>注重基础计算能力与逻辑思维培养，加强应用题分析与解决能力训练。</p>";';
+      fullHTML += 's_plan+="<p><strong>英语学科：</strong>强化听说读写综合能力培养，增加口语表达与阅读拓展训练。</p>";';
+      fullHTML += 's_plan+="<p><strong>其他学科：</strong>音体美及综合实践课程注重素养培育，促进学生全面发展与个性特长培养。</p>";';
+      fullHTML += 's_plan+="<p>"+semester+"教学重点：</p>";';
+      fullHTML += 's_plan+="<ul>";';
       fullHTML += 's_plan+="<li>系统梳理本学期核心知识点，帮助学生构建完整的知识体系</li>";';
       fullHTML += 's_plan+="<li>加强学法指导，培养学生自主学习能力和良好的学习习惯</li>";';
       fullHTML += 's_plan+="<li>注重分层教学，针对不同层次学生制定个性化提升方案</li>";';
@@ -2341,62 +2399,58 @@
 
       // 家校配合建议
       fullHTML += 'var s_cooperation="";';
-      fullHTML += 's_cooperation+="<p style=\'font-size:14px;color:#555;line-height:2;margin-bottom:10px;\'>孩子的教育需要学校和家庭的共同努力。在此，我向各位家长提出以下几点配合建议：</p>";';
-      fullHTML += 's_cooperation+="<div style=\'background:#FFF8F8;border:1px solid #FFCDD2;border-radius:10px;padding:14px 16px;margin-bottom:10px;\'>";';
-      fullHTML += 's_cooperation+="<div style=\'font-size:13px;font-weight:700;color:#C62828;margin-bottom:8px;\'>⏰ 作息与时间管理</div>";';
-      fullHTML += 's_cooperation+="<ul style=\'font-size:13px;color:#555;line-height:2;padding-left:20px;\'>";';
+      fullHTML += 's_cooperation+="<p>孩子的教育需要学校和家庭的共同努力。在此，我向各位家长提出以下几点配合建议：</p>";';
+      fullHTML += 's_cooperation+="<p><strong>作息与时间管理</strong></p>";';
+      fullHTML += 's_cooperation+="<ul>";';
       fullHTML += 's_cooperation+="<li>确保孩子每天有充足的睡眠时间（建议8小时以上）</li>";';
       fullHTML += 's_cooperation+="<li>帮助孩子制定合理的学习计划，培养时间管理意识</li>";';
       fullHTML += 's_cooperation+="<li>控制孩子使用电子产品的时间，引导健康使用习惯</li>";';
-      fullHTML += 's_cooperation+="</ul></div>";';
-      fullHTML += 's_cooperation+="<div style=\'background:#F3E5F5;border:1px solid #CE93D8;border-radius:10px;padding:14px 16px;margin-bottom:10px;\'>";';
-      fullHTML += 's_cooperation+="<div style=\'font-size:13px;font-weight:700;color:#7B1FA2;margin-bottom:8px;\'>📖 家庭学习指导</div>";';
-      fullHTML += 's_cooperation+="<ul style=\'font-size:13px;color:#555;line-height:2;padding-left:20px;\'>";';
+      fullHTML += 's_cooperation+="</ul>";';
+      fullHTML += 's_cooperation+="<p><strong>家庭学习指导</strong></p>";';
+      fullHTML += 's_cooperation+="<ul>";';
       fullHTML += 's_cooperation+="<li>每天抽时间关注孩子的作业完成情况，适度辅导但不要包办代替</li>";';
       fullHTML += 's_cooperation+="<li>为孩子营造良好的家庭学习氛围，以身作则树立榜样</li>";';
       fullHTML += 's_cooperation+="<li>多与孩子进行学习方面的沟通，了解他们的困惑与需求</li>";';
       fullHTML += 's_cooperation+="<li>鼓励孩子多阅读课外书籍，拓宽知识视野，培养阅读习惯</li>";';
-      fullHTML += 's_cooperation+="</ul></div>";';
-      fullHTML += 's_cooperation+="<div style=\'background:#E8F5E9;border:1px solid #A5D6A7;border-radius:10px;padding:14px 16px;margin-bottom:10px;\'>";';
-      fullHTML += 's_cooperation+="<div style=\'font-size:13px;font-weight:700;color:#2E7D32;margin-bottom:8px;\'>💬 沟通与心理关怀</div>";';
-      fullHTML += 's_cooperation+="<ul style=\'font-size:13px;color:#555;line-height:2;padding-left:20px;\'>";';
+      fullHTML += 's_cooperation+="</ul>";';
+      fullHTML += 's_cooperation+="<p><strong>沟通与心理关怀</strong></p>";';
+      fullHTML += 's_cooperation+="<ul>";';
       fullHTML += 's_cooperation+="<li>关注孩子的情绪变化，及时进行心理疏导与关怀</li>";';
       fullHTML += 's_cooperation+="<li>多给予孩子积极的鼓励与肯定，增强自信心与学习动力</li>";';
       fullHTML += 's_cooperation+="<li>建立平等对话的亲子关系，倾听孩子的想法与感受</li>";';
       fullHTML += 's_cooperation+="<li>避免过度施压，关注孩子心理健康与承受能力</li>";';
-      fullHTML += 's_cooperation+="</ul></div>";';
-      fullHTML += 's_cooperation+="<div style=\'background:#E3F2FD;border:1px solid #90CAF9;border-radius:10px;padding:14px 16px;\'>";';
-      fullHTML += 's_cooperation+="<div style=\'font-size:13px;font-weight:700;color:#1565C0;margin-bottom:8px;\'>🤝 家校协同配合</div>";';
-      fullHTML += 's_cooperation+="<ul style=\'font-size:13px;color:#555;line-height:2;padding-left:20px;\'>";';
+      fullHTML += 's_cooperation+="</ul>";';
+      fullHTML += 's_cooperation+="<p><strong>家校协同配合</strong></p>";';
+      fullHTML += 's_cooperation+="<ul>";';
       fullHTML += 's_cooperation+="<li>积极配合学校和班级的工作要求，关注班级通知与消息</li>";';
       fullHTML += 's_cooperation+="<li>主动与老师沟通孩子在家和在校的表现，形成教育合力</li>";';
       fullHTML += 's_cooperation+="<li>积极参加学校组织的各类家长活动和开放日</li>";';
       fullHTML += 's_cooperation+="<li>如有任何问题或建议，欢迎随时与老师联系沟通</li>";';
-      fullHTML += 's_cooperation+="</ul></div>";';
+      fullHTML += 's_cooperation+="</ul>";';
 
       // 答疑环节
       fullHTML += 'var s_qa="";';
-      fullHTML += 's_qa+="<p style=\'font-size:14px;color:#555;line-height:2;margin-bottom:10px;\'>各位家长，以上是我今天的发言内容。接下来，我们进入家长答疑环节。</p>";';
-      fullHTML += 's_qa+="<p style=\'font-size:14px;color:#555;line-height:2;margin-bottom:10px;\'>在座的各位家长在教育孩子的过程中，一定有很多经验和心得，也会有一些困惑和疑问。现在我把时间交给大家，欢迎各位畅所欲言：</p>";';
-      fullHTML += 's_qa+="<ul style=\'font-size:14px;color:#555;line-height:2;padding-left:24px;margin-bottom:12px;\'>";';
+      fullHTML += 's_qa+="<p>各位家长，以上是我今天的发言内容。接下来，我们进入家长答疑环节。</p>";';
+      fullHTML += 's_qa+="<p>在座的各位家长在教育孩子的过程中，一定有很多经验和心得，也会有一些困惑和疑问。现在我把时间交给大家，欢迎各位畅所欲言：</p>";';
+      fullHTML += 's_qa+="<ul>";';
       fullHTML += 's_qa+="<li>关于孩子学习习惯培养方面的问题</li>";';
       fullHTML += 's_qa+="<li>关于学科辅导与作业指导方面的问题</li>";';
       fullHTML += 's_qa+="<li>关于孩子心理健康与情绪管理方面的问题</li>";';
       fullHTML += 's_qa+="<li>关于家校沟通与配合方面的建议</li>";';
       fullHTML += 's_qa+="<li>其他您关心的问题</li>";';
       fullHTML += 's_qa+="</ul>";';
-      fullHTML += 's_qa+="<p style=\'font-size:14px;color:#555;line-height:2;margin-bottom:10px;\'>（家长提问，教师逐一耐心解答，做好记录并在会后整理反馈）</p>";';
-      fullHTML += 's_qa+="<p style=\'font-size:14px;color:#555;line-height:2;margin-bottom:10px;\'>感谢各位家长的积极提问和宝贵意见！针对大家提出的共性问题，我会整理后在班级群中进行统一回复；对于个性化问题，请会后单独与我沟通，我会尽我所能提供帮助。</p>";';
+      fullHTML += 's_qa+="<p>（家长提问，教师逐一耐心解答，做好记录并在会后整理反馈）</p>";';
+      fullHTML += 's_qa+="<p>感谢各位家长的积极提问和宝贵意见！针对大家提出的共性问题，我会整理后在班级群中进行统一回复；对于个性化问题，请会后单独与我沟通，我会尽我所能提供帮助。</p>";';
 
       // 结束语
       fullHTML += 'var s_ending="";';
-      fullHTML += 's_ending+="<p style=\'font-size:14px;color:#555;line-height:2;margin-bottom:10px;\'>尊敬的各位家长，今天的家长会到此即将接近尾声。</p>";';
-      fullHTML += 's_ending+="<p style=\'font-size:14px;color:#555;line-height:2;margin-bottom:10px;\'>"+purpose+"这是我们今天家长会的核心目的，也是我在接下来的工作中会重点关注的方面。</p>";';
-      fullHTML += 's_ending+="<p style=\'font-size:14px;color:#555;line-height:2;margin-bottom:10px;\'>每一个孩子的成长都倾注了家庭和学校共同的心血。教育是一场长跑，需要我们有足够的耐心和智慧。让我们携手同行，用爱与责任共同托起明天的太阳，为孩子的健康成长保驾护航！</p>";';
-      fullHTML += 's_ending+="<p style=\'font-size:14px;color:#555;line-height:2;margin-bottom:10px;\'>最后，再次感谢各位家长的到来与支持！如果您在会后有任何问题或建议，欢迎随时与我联系沟通。期待我们携手合作，共同见证孩子们的成长与进步！</p>";';
-      fullHTML += 's_ending+="<p style=\'font-size:14px;color:#555;line-height:2;margin-bottom:10px;\'>祝各位家长身体健康，工作顺利，阖家幸福！</p>";';
-      fullHTML += 's_ending+="<p style=\'font-size:14px;color:#555;line-height:2;text-align:right;margin-top:16px;\'>"+teacher+"</p>";';
-      fullHTML += 's_ending+="<p style=\'font-size:14px;color:#555;line-height:2;text-align:right;\'>"+new Date().getFullYear()+"年</p>";';
+      fullHTML += 's_ending+="<p>尊敬的各位家长，今天的家长会到此即将接近尾声。</p>";';
+      fullHTML += 's_ending+="<p>"+purpose+"这是我们今天家长会的核心目的，也是我在接下来的工作中会重点关注的方面。</p>";';
+      fullHTML += 's_ending+="<p>每一个孩子的成长都倾注了家庭和学校共同的心血。教育是一场长跑，需要我们有足够的耐心和智慧。让我们携手同行，用爱与责任共同托起明天的太阳，为孩子的健康成长保驾护航！</p>";';
+      fullHTML += 's_ending+="<p>最后，再次感谢各位家长的到来与支持！如果您在会后有任何问题或建议，欢迎随时与我联系沟通。期待我们携手合作，共同见证孩子们的成长与进步！</p>";';
+      fullHTML += 's_ending+="<p>祝各位家长身体健康，工作顺利，阖家幸福！</p>";';
+      fullHTML += 's_ending+="<p style=\'text-align:right;\'>"+teacher+"</p>";';
+      fullHTML += 's_ending+="<p style=\'text-align:right;\'>"+new Date().getFullYear()+"年</p>";';
 
       // 构建内容区
       fullHTML += 'var allContent={};';
@@ -2408,25 +2462,24 @@
       fullHTML += 'allContent["结束语"]={title:"六、结束语",content:s_ending};';
 
       fullHTML += 'p+="<div id=\'resultBody\' style=\'padding:22px 26px 30px;\'>";';
-      fullHTML += 'p+="<h2 style=\'font-size:16px;color:#1B5EA7;margin-bottom:14px;font-weight:700;border-left:4px solid #1B5EA7;padding-left:10px;\'>开场白</h2>"+s_intro;';
+      fullHTML += 'p+="<h2>开场白</h2>"+s_intro;';
       fullHTML += 'for(var idx=0;idx<structs.length;idx++){';
       fullHTML += 'var s=structs[idx];';
       fullHTML += 'if(allContent[s]){';
-      fullHTML += 'p+="<h2 style=\'font-size:15px;color:#1B5EA7;margin:20px 0 10px;font-weight:700;border-left:3px solid #1B5EA7;padding-left:8px;\'>"+allContent[s].title+"</h2>"+allContent[s].content;';
+      fullHTML += 'p+="<h2>"+allContent[s].title+"</h2>"+allContent[s].content;';
       fullHTML += '}else{';
-      fullHTML += 'p+="<h2 style=\'font-size:15px;color:#1B5EA7;margin:20px 0 10px;font-weight:700;border-left:3px solid #1B5EA7;padding-left:8px;\'>"+s+"</h2><p style=\'color:#888;font-size:13px;\'>（"+s+"具体内容可根据实际情况补充）</p>";';
+      fullHTML += 'p+="<h2>"+s+"</h2><p>（"+s+"具体内容可根据实际情况补充）</p>";';
       fullHTML += '}}';
       fullHTML += 'if(extra){';
-      fullHTML += 'p+="<h2 style=\'font-size:15px;color:#1B5EA7;margin:20px 0 10px;font-weight:700;border-left:3px solid #1B5EA7;padding-left:8px;\'>附：附加说明</h2><p style=\'font-size:13px;color:#555;line-height:1.8;\'>"+extra.replace(/\\n/g,"<br>")+"</p>";';
+      fullHTML += 'p+="<h2>附：附加说明</h2><p>"+extra.replace(/\\n/g,"<br>")+"</p>";';
       fullHTML += '}';
       fullHTML += 'p+="</div></div></div>";';
 
       // 脚本
-      fullHTML += 'function copySpeech(){navigator.clipboard.writeText(document.getElementById("resultBody").innerText).then(function(){var b=document.querySelectorAll("button[onclick*=copySpeech]")[0];if(b){b.textContent="✅ 已复制";setTimeout(function(){b.textContent="📋 复制内容";},1500);}}).catch(function(){});}';
-      fullHTML += 'function downloadSpeech(){var name=grade+semester+"家长会发言稿.txt";var t=document.getElementById("resultBody").innerText;var b=new Blob([String.fromCharCode(0xFEFF)+t],{type:"text/plain;charset=utf-8"});var dl=document.createElement("a");dl.href=URL.createObjectURL(b);dl.download=name;dl.click();}';
-      fullHTML += 'function reGenSpeech(){window.location.reload();}';
-      fullHTML += 'function newSpeech(){if(window.opener){window.opener.location.reload();window.close();}else{window.location.reload();}}';
-      fullHTML += 'document.addEventListener("DOMContentLoaded",function(){document.querySelectorAll("button[onclick*=copySpeech]").forEach(function(b){b.addEventListener("click",copySpeech);});document.querySelectorAll("button[onclick*=downloadSpeech]").forEach(function(b){b.addEventListener("click",downloadSpeech);});document.querySelectorAll("button[onclick*=reGenSpeech]").forEach(function(b){b.addEventListener("click",reGenSpeech);});document.querySelectorAll("button[onclick*=newSpeech]").forEach(function(b){b.addEventListener("click",newSpeech);});});';
+      fullHTML += 'function reGenSpeech(){if(window.opener){window.opener.location.href="index.html";}window.close();}';
+      fullHTML += 'function saveSpeech(){var t=document.getElementById("resultBody").innerText;var b=new Blob([String.fromCharCode(0xFEFF)+t],{type:"text/plain;charset=utf-8"});var dl=document.createElement("a");dl.href=URL.createObjectURL(b);var now=new Date();var filename="家长会发言稿_"+now.getFullYear()+String(now.getMonth()+1).padStart(2,"0")+String(now.getDate()).padStart(2,"0")+".txt";dl.download=filename;dl.click();var btn=document.querySelectorAll("button[onclick*=saveSpeech]")[0];if(btn){btn.textContent="✅ 已保存";setTimeout(function(){btn.textContent="💾 保存";},1500);}}';
+      fullHTML += 'function htmlToEditableText(html){if(!html)return"";var temp=document.createElement("div");temp.innerHTML=html;return htmlToTextNode(temp);}function htmlToTextNode(el){var text="";var children=el.childNodes;for(var i=0;i<children.length;i++){var node=children[i];if(node.nodeType===Node.TEXT_NODE){text+=node.textContent;}else if(node.nodeType===Node.ELEMENT_NODE){var tag=node.tagName.toLowerCase();if(tag==="h1"||tag==="h2"||tag==="h3"||tag==="h4"){if(text&&!text.endsWith("\\n\\n"))text+="\\n\\n";text+=node.textContent;if(!text.endsWith("\\n"))text+="\\n";}else if(tag==="p"){if(text&&!text.endsWith("\\n\\n"))text+="\\n\\n";text+=node.textContent;}else if(tag==="br"){text+="\\n";}else if(tag==="ul"||tag==="ol"){var items=node.querySelectorAll("li");for(var j=0;j<items.length;j++){text+="• "+items[j].textContent+"\\n";}text+="\\n";}else if(tag==="li"){text+="• "+node.textContent+"\\n";}else if(tag==="strong"||tag==="b"||tag==="em"||tag==="i"||tag==="span"){text+=node.textContent;}else if(tag==="table"){var rows=node.querySelectorAll("tr");for(var r=0;r<rows.length;r++){var cells=rows[r].querySelectorAll("td, th");var rowText=[];for(var c=0;c<cells.length;c++){rowText.push(cells[c].textContent.trim());}if(rowText.length>0){text+=rowText.join(" | ")+"\\n";}}text+="\\n";}else if(tag==="div"){text+=htmlToTextNode(node);}else{text+=node.textContent;}}}return text;}function editableTextToHtml(text){if(!text)return"";var lines=text.split("\\n");var html="";var inList=false;for(var i=0;i<lines.length;i++){var line=lines[i];var trimmed=line.trim();if(trimmed===""){if(inList){html+="</ul>";inList=false;}continue;}if(trimmed.startsWith("• ")||trimmed.startsWith("- ")){if(!inList){html+="<ul>";inList=true;}html+="<li>"+trimmed.substring(2)+"</li>";}else{if(inList){html+="</ul>";inList=false;}if(/^[一二三四五六七八九十]、/.test(trimmed)||/^第[一二三四五六七八九十\\d]+[章节条点]/.test(trimmed)||/^【.+】/.test(trimmed)){html+="<h2>"+trimmed+"</h2>";}else{html+="<p>"+trimmed+"</p>";}}}if(inList){html+="</ul>";}return html;}function editSpeech(){var body=document.getElementById("resultBody");var orig=body.innerHTML;var editableText=htmlToEditableText(orig);body.innerHTML="<textarea id=resultEditor style=width:100%;min-height:400px;padding:12px;border:1px solid #ddd;border-radius:8px;font-size:14px;line-height:1.8;resize:vertical;font-family:inherit;>"+editableText.replace(/</g,"&lt;").replace(/>/g,"&gt;")+"</textarea>";var btns=document.querySelector(".preview-header").querySelectorAll("button");btns.forEach(function(b){b.style.display="none";});var h=document.querySelector(".preview-header").querySelector("div")||document.querySelector(".preview-header > div");var confBtn=document.createElement("button");confBtn.textContent="✅ 确认";confBtn.style.cssText="background:rgba(255,255,255,.9);border:1px solid rgba(200,200,200,.4);color:#1B5EA7;padding:4px 12px;border-radius:6px;font-size:12px;cursor:pointer;font-weight:600;";confBtn.onclick=function(){var htmlContent=editableTextToHtml(document.getElementById("resultEditor").value);document.getElementById("resultBody").innerHTML=htmlContent;btns.forEach(function(b2){b2.style.display="";});confBtn.remove();cancelBtn.remove();};var cancelBtn=document.createElement("button");cancelBtn.textContent="✖ 取消";cancelBtn.style.cssText="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:#fff;padding:4px 12px;border-radius:6px;font-size:12px;cursor:pointer;";cancelBtn.onclick=function(){document.getElementById("resultBody").innerHTML=orig;btns.forEach(function(b2){b2.style.display="";});confBtn.remove();cancelBtn.remove();};h.appendChild(confBtn);h.appendChild(cancelBtn);}';
+      fullHTML += 'document.addEventListener("DOMContentLoaded",function(){document.querySelectorAll("button[onclick*=saveSpeech]").forEach(function(b){b.addEventListener("click",saveSpeech);});document.querySelectorAll("button[onclick*=editSpeech]").forEach(function(b){b.addEventListener("click",editSpeech);});document.querySelectorAll("button[onclick*=downloadSpeech]").forEach(function(b){b.addEventListener("click",downloadSpeech);});document.querySelectorAll("button[onclick*=reGenSpeech]").forEach(function(b){b.addEventListener("click",reGenSpeech);});});';
 
       fullHTML += 'document.write(p);';
       fullHTML += 'if(window.opener && window.opener.updateHistoryContent){';
@@ -2471,14 +2524,161 @@
       document.getElementById('resultCard').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 
-    // ====== 复制结果 ======
-    function copyResult() {
-      var text = document.getElementById('resultBody').innerText;
-      navigator.clipboard.writeText(text).then(function() {
-        var btn = document.querySelector('.result-copy');
-        btn.textContent = '✅ 已复制';
-        setTimeout(function() { btn.textContent = '📋 复制内容'; }, 1500);
-      });
+    // ====== 保存结果 ======
+    function saveResult() {
+      var resultBody = document.getElementById('resultBody');
+      if (!resultBody) return;
+      var text = resultBody.innerText;
+      var blob = new Blob([text], { type: 'text/plain' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      var now = new Date();
+      var filename = '生成结果_' + now.getFullYear() + String(now.getMonth() + 1).padStart(2, '0') + String(now.getDate()).padStart(2, '0') + '_' + String(now.getHours()).padStart(2, '0') + String(now.getMinutes()).padStart(2, '0') + '.txt';
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+      var btn = document.querySelector('.result-save');
+      btn.textContent = '✅ 已保存';
+      setTimeout(function() { btn.textContent = '💾 保存'; }, 1500);
+    }
+
+    // ====== 编辑结果 ======
+    // 将HTML转换为可编辑的格式化文本
+    function htmlToEditableText(html) {
+      if (!html) return '';
+      var temp = document.createElement('div');
+      temp.innerHTML = html;
+      return htmlToTextNode(temp);
+    }
+
+    function htmlToTextNode(element) {
+      var text = '';
+      var children = element.childNodes;
+      for (var i = 0; i < children.length; i++) {
+        var node = children[i];
+        if (node.nodeType === Node.TEXT_NODE) {
+          text += node.textContent;
+        } else if (node.nodeType === Node.ELEMENT_NODE) {
+          var tagName = node.tagName.toLowerCase();
+          if (tagName === 'h1' || tagName === 'h2' || tagName === 'h3' || tagName === 'h4') {
+            if (text && !text.endsWith('\n\n')) text += '\n\n';
+            text += node.textContent;
+            if (!text.endsWith('\n')) text += '\n';
+          } else if (tagName === 'p') {
+            if (text && !text.endsWith('\n\n')) text += '\n\n';
+            text += node.textContent;
+          } else if (tagName === 'br') {
+            text += '\n';
+          } else if (tagName === 'ul' || tagName === 'ol') {
+            var items = node.querySelectorAll('li');
+            for (var j = 0; j < items.length; j++) {
+              text += '• ' + items[j].textContent + '\n';
+            }
+            text += '\n';
+          } else if (tagName === 'li') {
+            text += '• ' + node.textContent + '\n';
+          } else if (tagName === 'strong' || tagName === 'b' || tagName === 'em' || tagName === 'i' || tagName === 'span') {
+            text += node.textContent;
+          } else if (tagName === 'table') {
+            var rows = node.querySelectorAll('tr');
+            for (var r = 0; r < rows.length; r++) {
+              var cells = rows[r].querySelectorAll('td, th');
+              var rowText = [];
+              for (var c = 0; c < cells.length; c++) {
+                rowText.push(cells[c].textContent.trim());
+              }
+              if (rowText.length > 0) {
+                text += rowText.join(' | ') + '\n';
+              }
+            }
+            text += '\n';
+          } else if (tagName === 'div') {
+            text += htmlToTextNode(node);
+          } else {
+            text += node.textContent;
+          }
+        }
+      }
+      return text;
+    }
+
+    // 将编辑的文本转换回HTML
+    function editableTextToHtml(text) {
+      if (!text) return '';
+      var lines = text.split('\n');
+      var html = '';
+      var inList = false;
+
+      for (var i = 0; i < lines.length; i++) {
+        var line = lines[i];
+        var trimmedLine = line.trim();
+
+        if (trimmedLine === '') {
+          if (inList) {
+            html += '</ul>';
+            inList = false;
+          }
+          continue;
+        }
+
+        if (trimmedLine.startsWith('• ') || trimmedLine.startsWith('- ')) {
+          if (!inList) {
+            html += '<ul>';
+            inList = true;
+          }
+          html += '<li>' + trimmedLine.substring(2) + '</li>';
+        } else {
+          if (inList) {
+            html += '</ul>';
+            inList = false;
+          }
+
+          if (/^[一二三四五六七八九十]、/.test(trimmedLine) ||
+              /^第[一二三四五六七八九十\d]+[章节条点]/.test(trimmedLine) ||
+              /^【.+】/.test(trimmedLine)) {
+            html += '<h2>' + trimmedLine + '</h2>';
+          } else {
+            html += '<p>' + trimmedLine + '</p>';
+          }
+        }
+      }
+
+      if (inList) {
+        html += '</ul>';
+      }
+
+      return html;
+    }
+
+    function editResult() {
+      var resultBody = document.getElementById('resultBody');
+      if (!resultBody) return;
+      var currentContent = resultBody.innerHTML;
+      var editableText = htmlToEditableText(currentContent);
+      resultBody.innerHTML = '<textarea id="resultEditor" style="width:100%;min-height:300px;padding:12px;border:1px solid #ddd;border-radius:8px;font-size:14px;line-height:1.8;resize:vertical;font-family:inherit;">' + editableText.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</textarea>';
+      var btnContainer = document.querySelector('.result-actions');
+      btnContainer.innerHTML = '<button class="result-save" onclick="confirmEdit()">✅ 确认</button><button class="result-edit" onclick="cancelEdit()">✖️ 取消</button>';
+      window._originalContent = currentContent;
+    }
+
+    function confirmEdit() {
+      var editor = document.getElementById('resultEditor');
+      if (!editor) return;
+      var resultBody = document.getElementById('resultBody');
+      var htmlContent = editableTextToHtml(editor.value);
+      resultBody.innerHTML = htmlContent;
+      var btnContainer = document.querySelector('.result-actions');
+      btnContainer.innerHTML = '<button class="result-save" onclick="saveResult()">💾 保存</button><button class="result-edit" onclick="editResult()">✏️ 编辑</button>';
+    }
+
+    function cancelEdit() {
+      var resultBody = document.getElementById('resultBody');
+      if (window._originalContent) {
+        resultBody.innerHTML = window._originalContent;
+      }
+      var btnContainer = document.querySelector('.result-actions');
+      btnContainer.innerHTML = '<button class="result-save" onclick="saveResult()">💾 保存</button><button class="result-edit" onclick="editResult()">✏️ 编辑</button>';
     }
 
     // ====== 初始化历史记录 ======

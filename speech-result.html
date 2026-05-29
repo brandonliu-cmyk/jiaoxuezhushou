@@ -7,37 +7,43 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: "Microsoft YaHei","PingFang SC",sans-serif; background: #F0F4F8; color: #333; min-height: 100vh; }
-    
-    .back-btn { position: fixed; left: 20px; top: 16px; background: #fff; border: 1.5px solid #D8E2EE; color: #1B5EA7; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,.1); transition: all .2s; z-index: 100; }
+
+    .back-btn { position: fixed; left: 20px; top: 16px; background: #fff; border: 1.5px solid #D8E2EE; color: #1B5EA7; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,.1); transition: all .2s; z-index: 1001; }
     .back-btn:hover { background: #1B5EA7; color: #fff; border-color: #1B5EA7; }
     .back-btn svg { width: 18px; height: 18px; }
-    
+
     .top-bar { background: #1B5EA7; color: #fff; padding: 0 40px; height: 56px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 8px rgba(0,0,0,.15); position: sticky; top: 0; z-index: 10; }
     .top-bar-left { display: flex; align-items: center; gap: 10px; }
     .top-bar-title { font-size: 16px; font-weight: 600; }
     .top-bar-badge { background: rgba(255,255,255,.2); font-size: 12px; padding: 3px 12px; border-radius: 20px; }
     .top-bar-actions { display: flex; gap: 8px; }
-    
+
     .btn-action { background: rgba(255,255,255,.2); border: 1px solid rgba(255,255,255,.4); color: #fff; padding: 6px 14px; border-radius: 6px; font-size: 13px; cursor: pointer; transition: all .2s; display: flex; align-items: center; gap: 4px; }
     .btn-action:hover { background: rgba(255,255,255,.3); }
     .btn-action.copy { background: rgba(255,255,255,.9); color: #1B5EA7; border-color: rgba(200,200,200,.4); }
     .btn-action.copy:hover { background: #fff; }
-    
+
     .container { max-width: 900px; margin: 24px auto 60px; padding: 0 20px; }
     .result-card { background: #fff; border-radius: 16px; border: 1.5px solid #E8EEF4; overflow: hidden; box-shadow: 0 2px 12px rgba(27,94,167,.06); }
-    
+
     .result-body { padding: 28px 32px; font-size: 15px; line-height: 2; color: #444; }
-    .result-body h2 { font-size: 17px; color: #1B5EA7; margin: 24px 0 12px; font-weight: 700; border-left: 4px solid #1B5EA7; padding-left: 12px; }
+    .result-body h2 { font-size: 17px; margin: 24px 0 12px; font-weight: 700; }
     .result-body p { margin-bottom: 12px; }
     .result-body ul { padding-left: 24px; margin-bottom: 12px; }
     .result-body li { margin-bottom: 4px; }
-    
-    .loading { display: none; position: fixed; inset: 0; background: rgba(255,255,255,.95); z-index: 999; align-items: center; justify-content: center; flex-direction: column; gap: 16px; }
+    .result-body strong { font-weight: 700; }
+
+    .loading { display: none; position: fixed; inset: 0; background: rgba(255,255,255,.95); z-index: 999; align-items: center; justify-content: center; flex-direction: column; gap: 20px; }
     .loading.show { display: flex; }
-    .spinner { width: 44px; height: 44px; border: 4px solid #D8E2EE; border-top-color: #1B5EA7; border-radius: 50%; animation: spin .8s linear infinite; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .loading-text { font-size: 15px; color: #555; font-weight: 500; }
-    
+    .loading-icon { font-size: 48px; margin-bottom: 8px; }
+    .loading-title { font-size: 18px; font-weight: 600; color: #1a1a2e; margin-bottom: 4px; }
+    .loading-sub { font-size: 14px; color: #888; margin-bottom: 24px; }
+    .progress-container { width: 320px; background: #E8EEF4; border-radius: 12px; height: 8px; overflow: hidden; margin-bottom: 12px; }
+    .progress-bar { height: 100%; background: linear-gradient(90deg, #1B5EA7, #42A5F5); border-radius: 12px; width: 0%; transition: width 0.3s ease; }
+    .progress-info { display: flex; justify-content: center; width: 320px; font-size: 13px; color: #888; }
+    .progress-percent { font-weight: 600; color: #1B5EA7; }
+    .loading-tips { margin-top: 16px; font-size: 13px; color: #aaa; max-width: 400px; text-align: center; line-height: 1.6; }
+
     .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px); background: #1B5EA7; color: #fff; padding: 12px 24px; border-radius: 8px; font-size: 14px; opacity: 0; transition: all .3s; z-index: 1000; }
     .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
   </style>
@@ -49,20 +55,20 @@
       <path d="M15 18l-6-6 6-6"/>
     </svg>
   </button>
-  
+
   <div class="top-bar">
     <div class="top-bar-left">
       <span class="top-bar-title" id="pageTitle">🎤 家长会发言稿</span>
       <span class="top-bar-badge">AI 生成</span>
     </div>
-    <div class="top-bar-actions">
+    <div class="top-bar-actions" id="btnContainer">
       <button class="btn-action" onclick="reGen()">🔄 重新生成</button>
       <button class="btn-action" onclick="downloadDoc()">⬇ 下载</button>
-      <button class="btn-action" onclick="newPlan()">➕ 新建</button>
-      <button class="btn-action copy" onclick="copyResult()">📋 复制内容</button>
+      <button class="btn-action" onclick="saveDoc()">💾 保存</button>
+      <button class="btn-action copy" onclick="editDoc()">✏️ 编辑</button>
     </div>
   </div>
-  
+
   <div class="container">
     <div class="result-card">
       <div class="result-body" id="resultBody">
@@ -70,26 +76,42 @@
       </div>
     </div>
   </div>
-  
+
   <div class="loading" id="loadingOverlay">
-    <div class="spinner"></div>
-    <div class="loading-text">正在生成家长会发言稿，请稍候...</div>
+    <div class="loading-icon">🎤</div>
+    <div class="loading-title">正在生成家长会发言稿</div>
+    <div class="loading-sub" id="loadingSub">后台生成中，预计需要60s</div>
+    <div class="progress-container">
+      <div class="progress-bar" id="progressBar"></div>
+    </div>
+    <div class="progress-info">
+      <span class="progress-percent" id="progressPercent">0%</span>
+    </div>
+    <div class="loading-tips" id="loadingTips">返回首页不影响生成结果，可以在历史记录查看生成结果</div>
   </div>
   
   <div class="toast" id="toast">已复制到剪贴板</div>
-  
+
   <script>
     // 从sessionStorage获取父窗口传递的数据
     var dataStr = sessionStorage.getItem("speechResult");
-    
-    // 如果有父窗口传递的数据，填充内容
+
+    // 获取URL参数
+    var urlParams = new URLSearchParams(window.location.search);
+    var historyId = urlParams.get('id');
+    var currentHistoryId = historyId;
+
+    // 如果有父窗口传递的数据，显示进度动画后填充内容
     if (dataStr) {
       try {
         var data = JSON.parse(dataStr);
         sessionStorage.removeItem("speechResult");
         if (data.title) document.getElementById('pageTitle').textContent = '🎤 ' + data.title;
         if (data.content) {
-          streamContent(data.content);
+          // 显示进度动画，完成后显示内容
+          showProgress(function() {
+            document.getElementById('resultBody').innerHTML = data.content;
+          });
         } else {
           document.getElementById('resultBody').innerHTML = '<p style="text-align:center;color:#999;padding:40px;">正在加载内容...</p>';
         }
@@ -97,116 +119,224 @@
         console.error('解析数据失败:', e);
         document.getElementById('resultBody').innerHTML = '<p style="text-align:center;color:#E53935;padding:40px;">数据解析失败，请返回重试<br><button onclick="goBack()" style="margin-top:10px;padding:8px 16px;background:#1B5EA7;color:#fff;border:none;border-radius:6px;cursor:pointer;">返回</button></p>';
       }
+    } else if (historyId) {
+      // 从历史记录加载
+      loadFromHistory(historyId, 'speech');
     } else {
       document.getElementById('resultBody').innerHTML = '<p style="text-align:center;color:#999;padding:40px;">未获取到数据，请返回重试<br><button onclick="goBack()" style="margin-top:10px;padding:8px 16px;background:#1B5EA7;color:#fff;border:none;border-radius:6px;cursor:pointer;">返回</button></p>';
     }
-    
-    // 流式输出函数
-    function streamContent(fullHTML) {
-      var resultBody = document.getElementById('resultBody');
-      
-      // 临时容器解析HTML，提取纯文本用于计算
-      var tempDiv = document.createElement('div');
-      tempDiv.innerHTML = fullHTML;
-      var fullText = tempDiv.textContent || tempDiv.innerText;
-      
-      // 计算速度：10秒显示全部内容
-      var totalChars = fullText.length;
-      var targetDuration = 10000; // 10秒
-      var charDelay = Math.max(20, Math.min(80, targetDuration / totalChars));
-      
-      // 初始显示
-      resultBody.innerHTML = '<div style="text-align:center;padding:20px;color:#1B5EA7;">✍️ 正在生成...</div>';
-      
-      // 创建临时div用于逐字符追加
-      var streamDiv = document.createElement('div');
-      streamDiv.style.lineHeight = '1.9';
-      resultBody.appendChild(streamDiv);
-      
-      // 逐字符显示
-      var charIndex = 0;
-      var currentText = '';
-      var streamInterval = null;
-      
-      streamInterval = setInterval(function() {
-        if (charIndex < totalChars) {
-          currentText += fullText[charIndex];
-          streamDiv.textContent = currentText;
-          charIndex++;
-        } else {
-          clearInterval(streamInterval);
-          // 显示最终完整HTML
-          resultBody.innerHTML = fullHTML;
+
+    // 从历史记录加载数据
+    function loadFromHistory(id, type) {
+      var list = JSON.parse(localStorage.getItem('teaching_helper_history') || '[]');
+      for (var i = 0; i < list.length; i++) {
+        if (list[i].id == id) {
+          var item = list[i];
+          document.getElementById('pageTitle').textContent = '🎤 ' + item.title;
+          currentHistoryId = item.id;
+          if (item.content && item.content.indexOf('<h2>') !== -1) {
+            document.getElementById('resultBody').innerHTML = item.content;
+          } else {
+            showProgress(function() {
+              if (item.content && item.content.indexOf('<h2>') !== -1) {
+                document.getElementById('resultBody').innerHTML = item.content;
+              } else {
+                document.getElementById('resultBody').innerHTML = '<p style="text-align:center;color:#999;padding:40px;">内容仍在生成中，请稍后再试...</p>';
+              }
+            });
+          }
+          return;
         }
-      }, charDelay);
-      
-      // 处理页面关闭时清除定时器
-      window.addEventListener('beforeunload', function() {
-        if (streamInterval) clearInterval(streamInterval);
-      });
+      }
+      document.getElementById('resultBody').innerHTML = '<p style="text-align:center;color:#999;padding:40px;">未找到该记录<br><button onclick="goBack()" style="margin-top:10px;padding:8px 16px;background:#1B5EA7;color:#fff;border:none;border-radius:6px;cursor:pointer;">返回</button></p>';
     }
-    
-    // 复制内容
-    function copyResult() {
-      var text = document.getElementById('resultBody').innerText;
-      navigator.clipboard.writeText(text).then(function() {
-        showToast('已复制到剪贴板');
-      }).catch(function() {
-        var textarea = document.createElement('textarea');
-        textarea.value = text;
-        document.body.appendChild(textarea);
-        textarea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textarea);
-        showToast('已复制到剪贴板');
-      });
+
+    // 显示生成进度动画
+    function showProgress(callback) {
+      var progressBar = document.getElementById('progressBar');
+      var progressPercent = document.getElementById('progressPercent');
+      var loadingSub = document.getElementById('loadingSub');
+
+      var loadingEl = document.getElementById('loadingOverlay');
+      loadingEl.classList.add('show');
+
+      var steps = [
+        { percent: 10, text: '正在分析家长会主题...', time: '⏱ 后台生成中' },
+        { percent: 30, text: '正在撰写开场与问候...', time: '⏱ 后台生成中' },
+        { percent: 50, text: '正在完善学情反馈...', time: '⏱ 后台生成中' },
+        { percent: 70, text: '正在撰写教学计划...', time: '⏱ 后台生成中' },
+        { percent: 90, text: '正在整理家校配合建议...', time: '⏱ 后台生成中' },
+        { percent: 100, text: '生成完成！', time: '✅ 完成' }
+      ];
+
+      var stepIndex = 0;
+      var interval = setInterval(function() {
+        if (stepIndex < steps.length) {
+          var step = steps[stepIndex];
+          progressBar.style.width = step.percent + '%';
+          progressPercent.textContent = step.percent + '%';
+          loadingSub.textContent = step.text;
+          stepIndex++;
+        } else {
+          clearInterval(interval);
+          setTimeout(function() {
+            loadingEl.classList.remove('show');
+            if (callback) callback();
+          }, 300);
+        }
+      }, 12000);
     }
-    
-    // 下载文档
-    function downloadDoc() {
+
+    // 保存文档
+    function saveDoc() {
       var title = document.getElementById('pageTitle').textContent.replace('🎤 ', '');
       var content = document.getElementById('resultBody').innerText;
-      var filename = title + '.txt';
       var blob = new Blob([String.fromCharCode(0xFEFF) + content], {type: 'text/plain;charset=utf-8'});
       var link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
+      var now = new Date();
+      var filename = title + '_' + now.getFullYear() + String(now.getMonth() + 1).padStart(2, '0') + String(now.getDate()).padStart(2, '0') + '.txt';
       link.download = filename;
       link.click();
+      showToast('已保存为 ' + filename);
     }
-    
-    // 返回上一页
-    function goBack() {
-      var formDataStr = sessionStorage.getItem("speechFormData");
-      if (formDataStr) {
-        try {
-          var params = JSON.parse(formDataStr);
-          sessionStorage.setItem("speechFormPreData", JSON.stringify({
-            grade: params.grade || '',
-            teacher: params.teacher || '',
-            theme: params.theme || '',
-            purpose: params.purpose || '',
-            classinfo: params.classinfo || '',
-            examples: params.examples || '',
-            subjects: params.subjects || '',
-            extra: params.extra || ''
-          }));
-        } catch(e) {}
+
+    // 将HTML转换为可编辑的格式化文本
+    function htmlToEditableText(html) {
+      if (!html) return '';
+      var temp = document.createElement('div');
+      temp.innerHTML = html;
+      return htmlToTextNode(temp);
+    }
+
+    function htmlToTextNode(element) {
+      var text = '';
+      var children = element.childNodes;
+      for (var i = 0; i < children.length; i++) {
+        var node = children[i];
+        if (node.nodeType === Node.TEXT_NODE) {
+          text += node.textContent;
+        } else if (node.nodeType === Node.ELEMENT_NODE) {
+          var tagName = node.tagName.toLowerCase();
+          if (tagName === 'h1' || tagName === 'h2' || tagName === 'h3' || tagName === 'h4') {
+            if (text && !text.endsWith('\n\n')) text += '\n\n';
+            text += node.textContent;
+            if (!text.endsWith('\n')) text += '\n';
+          } else if (tagName === 'p') {
+            if (text && !text.endsWith('\n\n')) text += '\n\n';
+            text += node.textContent;
+          } else if (tagName === 'br') {
+            text += '\n';
+          } else if (tagName === 'ul' || tagName === 'ol') {
+            var items = node.querySelectorAll('li');
+            for (var j = 0; j < items.length; j++) {
+              text += '• ' + items[j].textContent + '\n';
+            }
+            text += '\n';
+          } else if (tagName === 'li') {
+            text += '• ' + node.textContent + '\n';
+          } else if (tagName === 'strong' || tagName === 'b' || tagName === 'em' || tagName === 'i' || tagName === 'span') {
+            text += node.textContent;
+          } else if (tagName === 'div') {
+            text += htmlToTextNode(node);
+          } else {
+            text += node.textContent;
+          }
+        }
       }
-      window.location.href = 'speech-form.html';
+      return text;
     }
-    
+
+    // 将编辑的文本转换回HTML
+    function editableTextToHtml(text) {
+      if (!text) return '';
+      var lines = text.split('\n');
+      var html = '';
+      var inList = false;
+
+      for (var i = 0; i < lines.length; i++) {
+        var line = lines[i];
+        var trimmedLine = line.trim();
+
+        if (trimmedLine === '') {
+          if (inList) {
+            html += '</ul>';
+            inList = false;
+          }
+          continue;
+        }
+
+        if (trimmedLine.startsWith('• ') || trimmedLine.startsWith('- ')) {
+          if (!inList) {
+            html += '<ul>';
+            inList = true;
+          }
+          html += '<li>' + trimmedLine.substring(2) + '</li>';
+        } else {
+          if (inList) {
+            html += '</ul>';
+            inList = false;
+          }
+
+          if (/^[一二三四五六七八九十]、/.test(trimmedLine) ||
+              /^第[一二三四五六七八九十\d]+[章节条点]/.test(trimmedLine) ||
+              /^【.+】/.test(trimmedLine)) {
+            html += '<h2>' + trimmedLine + '</h2>';
+          } else {
+            html += '<p>' + trimmedLine + '</p>';
+          }
+        }
+      }
+
+      if (inList) {
+        html += '</ul>';
+      }
+
+      return html;
+    }
+
+    // 编辑文档
+    function editDoc() {
+      var resultBody = document.getElementById('resultBody');
+      var originalContent = resultBody.innerHTML;
+      var editableText = htmlToEditableText(originalContent);
+      resultBody.innerHTML = '<textarea id="resultEditor" style="width:100%;min-height:500px;padding:16px;border:1px solid #ddd;border-radius:8px;font-size:14px;line-height:1.8;resize:vertical;font-family:inherit;">' + editableText.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</textarea>';
+      var btnContainer = document.getElementById('btnContainer');
+      btnContainer.innerHTML = '<button class="btn-action" onclick="confirmEdit()">✅ 确认</button><button class="btn-action" onclick="cancelEdit()">✖ 取消</button>';
+      window._editOriginal = originalContent;
+    }
+
+    // 确认编辑
+    function confirmEdit() {
+      var editor = document.getElementById('resultEditor');
+      if (!editor) return;
+      var resultBody = document.getElementById('resultBody');
+      var htmlContent = editableTextToHtml(editor.value);
+      resultBody.innerHTML = htmlContent;
+      var btnContainer = document.getElementById('btnContainer');
+      btnContainer.innerHTML = '<button class="btn-action" onclick="reGen()">🔄 重新生成</button><button class="btn-action" onclick="downloadDoc()">⬇ 下载</button><button class="btn-action" onclick="saveDoc()">💾 保存</button><button class="btn-action copy" onclick="editDoc()">✏️ 编辑</button>';
+    }
+
+    // 取消编辑
+    function cancelEdit() {
+      var resultBody = document.getElementById('resultBody');
+      if (window._editOriginal) {
+        resultBody.innerHTML = window._editOriginal;
+      }
+      var btnContainer = document.getElementById('btnContainer');
+      btnContainer.innerHTML = '<button class="btn-action" onclick="reGen()">🔄 重新生成</button><button class="btn-action" onclick="downloadDoc()">⬇ 下载</button><button class="btn-action" onclick="saveDoc()">💾 保存</button><button class="btn-action copy" onclick="editDoc()">✏️ 编辑</button>';
+    }
+
+    // 返回输入框页面（重新生成）
+    function goBack() {
+      window.location.href = 'index.html';
+    }
+
     // 重新生成
     function reGen() {
       goBack();
     }
-    
-    // 新建
-    function newPlan() {
-      if (confirm('确定要新建吗？当前内容将不会被保存。')) {
-        window.location.href = 'index.html';
-      }
-    }
-    
+
     // 显示提示
     function showToast(msg) {
       var toast = document.getElementById('toast');
