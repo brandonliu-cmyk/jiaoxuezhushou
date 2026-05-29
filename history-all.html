@@ -123,6 +123,22 @@
       background: #FFF0F0;
     }
 
+    .history-card {
+      position: relative;
+    }
+
+    .card-generating {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: #FF9800;
+      color: #fff;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 10px;
+    }
+
     /* 空状态 */
     .history-empty {
       text-align: center;
@@ -143,6 +159,109 @@
       transition: opacity 0.2s;
     }
     .history-empty-btn:hover { opacity: 0.9; }
+
+    /* 筛选和搜索栏 */
+    .filter-bar {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .filter-tabs {
+      display: flex;
+      gap: 8px;
+    }
+    .filter-tab {
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      border: 1.5px solid #E8EEF4;
+      background: #fff;
+      color: #666;
+      transition: all 0.2s;
+    }
+    .filter-tab:hover {
+      border-color: #1B5EA7;
+      color: #1B5EA7;
+    }
+    .filter-tab.active {
+      background: #1B5EA7;
+      border-color: #1B5EA7;
+      color: #fff;
+    }
+    .search-box {
+      flex: 1;
+      min-width: 200px;
+      max-width: 320px;
+      position: relative;
+      margin-left: auto;
+    }
+    .search-box input {
+      width: 100%;
+      padding: 8px 16px 8px 36px;
+      border: 1.5px solid #E8EEF4;
+      border-radius: 8px;
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .search-box input:focus {
+      border-color: #1B5EA7;
+    }
+    .search-box::before {
+      content: '🔍';
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 14px;
+    }
+
+    /* 分页 */
+    .pagination {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      margin-top: 32px;
+      padding-bottom: 32px;
+    }
+    .page-btn {
+      min-width: 36px;
+      height: 36px;
+      padding: 0 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      cursor: pointer;
+      border: 1.5px solid #E8EEF4;
+      background: #fff;
+      color: #666;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .page-btn:hover {
+      border-color: #1B5EA7;
+      color: #1B5EA7;
+    }
+    .page-btn.active {
+      background: #1B5EA7;
+      border-color: #1B5EA7;
+      color: #fff;
+    }
+    .page-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .page-info {
+      font-size: 13px;
+      color: #888;
+      margin: 0 8px;
+    }
   </style>
 </head>
 <body>
@@ -178,16 +297,36 @@
     <div class="page-title">✦ 历史生成记录</div>
     <div class="page-subtitle">查看您所有的AI生成记录，方便重复使用和编辑</div>
 
+    <!-- 筛选和搜索栏 -->
+    <div class="filter-bar">
+      <div class="filter-tabs" id="filterTabs">
+        <div class="filter-tab active" data-type="all">全部</div>
+        <div class="filter-tab" data-type="plan">教学工作计划</div>
+        <div class="filter-tab" data-type="event">校园活动策划</div>
+        <div class="filter-tab" data-type="speech">家长会发言稿</div>
+      </div>
+      <div class="search-box">
+        <input type="text" id="searchInput" placeholder="搜索标题或内容关键词...">
+      </div>
+    </div>
+
     <div class="history-grid" id="historyGrid"></div>
     <div class="history-empty" id="historyEmpty" style="display:none;">
       <div class="history-empty-icon">📝</div>
       <div class="history-empty-text">暂无历史生成记录</div>
       <a href="index.html" class="history-empty-btn">去生成内容 →</a>
     </div>
+
+    <!-- 分页 -->
+    <div class="pagination" id="pagination"></div>
   </main>
 
   <script>
     var HISTORY_KEY = 'teaching_helper_history';
+    var PAGE_SIZE = 12;
+    var currentPage = 1;
+    var currentType = 'all';
+    var currentSearch = '';
 
     function getHistory() {
       try { return JSON.parse(localStorage.getItem(HISTORY_KEY)) || []; }
@@ -204,31 +343,68 @@
       renderHistory();
     }
 
-    function renderHistory() {
+    function getFilteredHistory() {
       var list = getHistory();
+      var filtered = list;
+
+      // 按类型筛选
+      if (currentType !== 'all') {
+        filtered = filtered.filter(function(item) { return item.type === currentType; });
+      }
+
+      // 按关键词搜索
+      if (currentSearch) {
+        var kw = currentSearch.toLowerCase();
+        filtered = filtered.filter(function(item) {
+          return item.title.toLowerCase().indexOf(kw) !== -1 ||
+                 (item.content && item.content.toLowerCase().indexOf(kw) !== -1) ||
+                 (item.desc && item.desc.toLowerCase().indexOf(kw) !== -1);
+        });
+      }
+
+      return filtered;
+    }
+
+    function renderHistory() {
+      var filtered = getFilteredHistory();
       var grid = document.getElementById('historyGrid');
       var emptyEl = document.getElementById('historyEmpty');
-      
-      if (list.length === 0) {
+      var paginationEl = document.getElementById('pagination');
+
+      if (filtered.length === 0) {
         grid.style.display = 'none';
         emptyEl.style.display = 'block';
+        paginationEl.style.display = 'none';
         return;
       }
-      
+
       grid.style.display = 'grid';
       emptyEl.style.display = 'none';
+      paginationEl.style.display = 'flex';
+
+      // 计算分页
+      var totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+      if (currentPage > totalPages) currentPage = totalPages;
+      if (currentPage < 1) currentPage = 1;
+
+      var start = (currentPage - 1) * PAGE_SIZE;
+      var end = start + PAGE_SIZE;
+      var pageItems = filtered.slice(start, end);
+
       grid.innerHTML = '';
-      
-      list.forEach(function(item) {
+
+      pageItems.forEach(function(item) {
         var typeIcon = item.type === 'plan' ? '📋' : item.type === 'event' ? '🎉' : '🎤';
         var typeLabel = item.type === 'plan' ? '教学计划' : item.type === 'event' ? '校园活动' : '家长会';
-        
+        var isGenerating = item.generating === true;
+        var generatingBadge = isGenerating ? '<span class="card-generating">生成中</span>' : '';
+
         var card = document.createElement('div');
         card.className = 'history-card';
         card.innerHTML =
-          '<div class="card-top">' +
+          '<div class="card-top">' + generatingBadge +
             '<div class="card-title">' + typeIcon + ' ' + item.title + '</div>' +
-            '<div class="card-desc">' + item.desc + '</div>' +
+            '<div class="card-desc">' + (item.desc || '') + '</div>' +
           '</div>' +
           '<div class="card-footer">' +
             '<div>' +
@@ -237,10 +413,117 @@
             '</div>' +
             '<span class="card-del" onclick="event.stopPropagation();delHistory(' + item.id + ')">✕ 删除</span>' +
           '</div>';
-        card.onclick = function() { replayHistory(item); };
+        card.onclick = function() {
+          if (isGenerating) {
+            var pageMap = { plan: 'plan-result.html', event: 'event-result.html', speech: 'speech-result.html' };
+            window.location.href = pageMap[item.type] + '?id=' + item.id;
+          } else {
+            replayHistory(item);
+          }
+        };
         grid.appendChild(card);
       });
+
+      // 渲染分页
+      renderPagination(totalPages);
     }
+
+    function renderPagination(totalPages) {
+      var paginationEl = document.getElementById('pagination');
+      paginationEl.innerHTML = '';
+
+      if (totalPages <= 1) return;
+
+      // 上一页
+      var prevBtn = document.createElement('button');
+      prevBtn.className = 'page-btn';
+      prevBtn.textContent = '‹';
+      prevBtn.disabled = currentPage === 1;
+      prevBtn.onclick = function() { currentPage--; renderHistory(); };
+      paginationEl.appendChild(prevBtn);
+
+      // 页码
+      var startPage = Math.max(1, currentPage - 2);
+      var endPage = Math.min(totalPages, currentPage + 2);
+
+      if (startPage > 1) {
+        var firstBtn = document.createElement('button');
+        firstBtn.className = 'page-btn';
+        firstBtn.textContent = '1';
+        firstBtn.onclick = function() { currentPage = 1; renderHistory(); };
+        paginationEl.appendChild(firstBtn);
+        if (startPage > 2) {
+          var ellipsis = document.createElement('span');
+          ellipsis.textContent = '...';
+          ellipsis.style.cssText = 'color:#888;padding:0 4px;';
+          paginationEl.appendChild(ellipsis);
+        }
+      }
+
+      for (var i = startPage; i <= endPage; i++) {
+        var btn = document.createElement('button');
+        btn.className = 'page-btn' + (i === currentPage ? ' active' : '');
+        btn.textContent = i;
+        btn.onclick = function() { currentPage = parseInt(this.textContent); renderHistory(); };
+        paginationEl.appendChild(btn);
+      }
+
+      if (endPage < totalPages) {
+        if (endPage < totalPages - 1) {
+          var ellipsis2 = document.createElement('span');
+          ellipsis2.textContent = '...';
+          ellipsis2.style.cssText = 'color:#888;padding:0 4px;';
+          paginationEl.appendChild(ellipsis2);
+        }
+        var lastBtn = document.createElement('button');
+        lastBtn.className = 'page-btn';
+        lastBtn.textContent = totalPages;
+        lastBtn.onclick = function() { currentPage = totalPages; renderHistory(); };
+        paginationEl.appendChild(lastBtn);
+      }
+
+      // 下一页
+      var nextBtn = document.createElement('button');
+      nextBtn.className = 'page-btn';
+      nextBtn.textContent = '›';
+      nextBtn.disabled = currentPage === totalPages;
+      nextBtn.onclick = function() { currentPage++; renderHistory(); };
+      paginationEl.appendChild(nextBtn);
+
+      // 页码信息
+      var info = document.createElement('span');
+      info.className = 'page-info';
+      info.textContent = '第 ' + currentPage + ' / ' + totalPages + ' 页，共 ' + getFilteredHistory().length + ' 条';
+      paginationEl.appendChild(info);
+    }
+
+    // 初始化筛选和搜索
+    document.addEventListener('DOMContentLoaded', function() {
+      renderHistory();
+
+      // 筛选标签点击
+      document.querySelectorAll('.filter-tab').forEach(function(tab) {
+        tab.onclick = function() {
+          document.querySelectorAll('.filter-tab').forEach(function(t) { t.classList.remove('active'); });
+          this.classList.add('active');
+          currentType = this.getAttribute('data-type');
+          currentPage = 1;
+          renderHistory();
+        };
+      });
+
+      // 搜索输入
+      var searchInput = document.getElementById('searchInput');
+      var searchTimer;
+      searchInput.oninput = function() {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(function() {
+          currentSearch = searchInput.value.trim();
+          currentPage = 1;
+          renderHistory();
+        }, 300);
+      };
+    });
 
     function replayHistory(item) {
       var typeMap = { plan: { icon: '📋', label: '教学计划', color: '#1B5EA7' }, event: { icon: '🎉', label: '校园活动', color: '#E65100' }, speech: { icon: '🎤', label: '家长会发言', color: '#7B1FA2' } };
@@ -272,7 +555,8 @@
             '</div>' +
             '<div style="display:flex;gap:8px;align-items:center;">' +
               '<button id="histDownloadBtn" style="background:rgba(255,255,255,.9);border:none;color:#1B5EA7;padding:6px 14px;border-radius:8px;font-size:12px;cursor:pointer;font-weight:600;">⬇ 下载</button>' +
-              '<button id="histCopyBtn" style="background:rgba(255,255,255,.9);border:none;color:#1B5EA7;padding:6px 14px;border-radius:8px;font-size:12px;cursor:pointer;font-weight:600;">📋 复制内容</button>' +
+              '<button id="histSaveBtn" style="background:rgba(255,255,255,.9);border:none;color:#1B5EA7;padding:6px 14px;border-radius:8px;font-size:12px;cursor:pointer;font-weight:600;">💾 保存</button>' +
+              '<button id="histEditBtn" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:#fff;padding:6px 14px;border-radius:8px;font-size:12px;cursor:pointer;">✏️ 编辑</button>' +
               '<button id="histCloseBtn" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:#fff;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;">关闭</button>' +
             '</div>' +
           '</div>' +
@@ -283,6 +567,113 @@
 
       var bodyEl = overlay.querySelector('#histBody');
       bodyEl.innerHTML = bodyHtml;
+
+      // 将HTML转换为可编辑的格式化文本
+      function htmlToEditableText(html) {
+        if (!html) return '';
+        var temp = document.createElement('div');
+        temp.innerHTML = html;
+        return htmlToTextNode(temp);
+      }
+
+      function htmlToTextNode(element) {
+        var text = '';
+        var children = element.childNodes;
+        for (var i = 0; i < children.length; i++) {
+          var node = children[i];
+          if (node.nodeType === Node.TEXT_NODE) {
+            text += node.textContent;
+          } else if (node.nodeType === Node.ELEMENT_NODE) {
+            var tagName = node.tagName.toLowerCase();
+            if (tagName === 'h1' || tagName === 'h2' || tagName === 'h3' || tagName === 'h4') {
+              if (text && !text.endsWith('\n\n')) text += '\n\n';
+              text += node.textContent;
+              if (!text.endsWith('\n')) text += '\n';
+            } else if (tagName === 'p') {
+              if (text && !text.endsWith('\n\n')) text += '\n\n';
+              text += node.textContent;
+            } else if (tagName === 'br') {
+              text += '\n';
+            } else if (tagName === 'ul' || tagName === 'ol') {
+              var items = node.querySelectorAll('li');
+              for (var j = 0; j < items.length; j++) {
+                text += '• ' + items[j].textContent + '\n';
+              }
+              text += '\n';
+            } else if (tagName === 'li') {
+              text += '• ' + node.textContent + '\n';
+            } else if (tagName === 'strong' || tagName === 'b' || tagName === 'em' || tagName === 'i' || tagName === 'span') {
+              text += node.textContent;
+            } else if (tagName === 'table') {
+              var rows = node.querySelectorAll('tr');
+              for (var r = 0; r < rows.length; r++) {
+                var cells = rows[r].querySelectorAll('td, th');
+                var rowText = [];
+                for (var c = 0; c < cells.length; c++) {
+                  rowText.push(cells[c].textContent.trim());
+                }
+                if (rowText.length > 0) {
+                  text += rowText.join(' | ') + '\n';
+                }
+              }
+              text += '\n';
+            } else if (tagName === 'div') {
+              text += htmlToTextNode(node);
+            } else {
+              text += node.textContent;
+            }
+          }
+        }
+        return text;
+      }
+
+      // 将编辑的文本转换回HTML
+      function editableTextToHtml(text) {
+        if (!text) return '';
+        var lines = text.split('\n');
+        var html = '';
+        var inList = false;
+
+        for (var i = 0; i < lines.length; i++) {
+          var line = lines[i];
+          var trimmedLine = line.trim();
+
+          if (trimmedLine === '') {
+            if (inList) {
+              html += '</ul>';
+              inList = false;
+            }
+            continue;
+          }
+
+          if (trimmedLine.startsWith('• ') || trimmedLine.startsWith('- ')) {
+            if (!inList) {
+              html += '<ul>';
+              inList = true;
+            }
+            html += '<li>' + trimmedLine.substring(2) + '</li>';
+          } else {
+            if (inList) {
+              html += '</ul>';
+              inList = false;
+            }
+
+            if (/^[一二三四五六七八九十]、/.test(trimmedLine) ||
+                /^第[一二三四五六七八九十\d]+[章节条点]/.test(trimmedLine) ||
+                /^【.+】/.test(trimmedLine)) {
+              html += '<h2>' + trimmedLine + '</h2>';
+            } else {
+              html += '<p>' + trimmedLine + '</p>';
+            }
+          }
+        }
+
+        if (inList) {
+          html += '</ul>';
+        }
+
+        return html;
+      }
 
       overlay.querySelector('#histDownloadBtn').onclick = function() {
         var filename = item.title + '.txt';
@@ -297,12 +688,43 @@
         setTimeout(function() { b.textContent = '⬇ 下载'; }, 1500);
       };
 
-      overlay.querySelector('#histCopyBtn').onclick = function() {
-        navigator.clipboard.writeText(bodyEl.innerText).then(function() {
-          var b = overlay.querySelector('#histCopyBtn');
-          b.textContent = '✅ 已复制';
-          setTimeout(function() { b.textContent = '📋 复制内容'; }, 1500);
-        });
+      overlay.querySelector('#histSaveBtn').onclick = function() {
+        var content = bodyEl.innerText;
+        var blob = new Blob([String.fromCharCode(0xFEFF) + content], { type: 'text/plain;charset=utf-8' });
+        var link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        var now = new Date();
+        var dateStr = now.getFullYear() + String(now.getMonth() + 1).padStart(2, '0') + String(now.getDate()).padStart(2, '0');
+        link.download = item.title + '_' + dateStr + '.txt';
+        link.click();
+        var b = overlay.querySelector('#histSaveBtn');
+        b.textContent = '✅ 已保存';
+        setTimeout(function() { b.textContent = '💾 保存'; }, 1500);
+      };
+
+      overlay.querySelector('#histEditBtn').onclick = function() {
+        var originalContent = bodyEl.innerHTML;
+        var editableText = htmlToEditableText(originalContent);
+        bodyEl.innerHTML = '<textarea id="histEditor" style="width:100%;min-height:400px;padding:16px;border:1px solid #ddd;border-radius:8px;font-size:14px;line-height:1.8;resize:vertical;font-family:inherit;">' + editableText.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</textarea>';
+        var btnContainer = overlay.querySelector('div[style*="display:flex"][style*="gap:8px"]');
+        btnContainer.innerHTML = '<button id="histConfirmBtn" style="background:rgba(255,255,255,.9);border:none;color:#1B5EA7;padding:6px 14px;border-radius:8px;font-size:12px;cursor:pointer;font-weight:600;">✅ 确认</button><button id="histCancelBtn" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:#fff;padding:6px 14px;border-radius:8px;font-size:12px;cursor:pointer;">✖ 取消</button><button id="histCloseBtn" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:#fff;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;">关闭</button>';
+        overlay.querySelector('#histConfirmBtn').onclick = function() {
+          var htmlContent = editableTextToHtml(document.getElementById('histEditor').value);
+          bodyEl.innerHTML = htmlContent;
+          btnContainer.innerHTML = '<button id="histDownloadBtn" style="background:rgba(255,255,255,.9);border:none;color:#1B5EA7;padding:6px 14px;border-radius:8px;font-size:12px;cursor:pointer;font-weight:600;">⬇ 下载</button><button id="histSaveBtn" style="background:rgba(255,255,255,.9);border:none;color:#1B5EA7;padding:6px 14px;border-radius:8px;font-size:12px;cursor:pointer;font-weight:600;">💾 保存</button><button id="histEditBtn" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:#fff;padding:6px 14px;border-radius:8px;font-size:12px;cursor:pointer;">✏️ 编辑</button><button id="histCloseBtn" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:#fff;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;">关闭</button>';
+          overlay.querySelector('#histDownloadBtn').onclick = overlay.querySelector('#histDownloadBtn').onclick;
+          overlay.querySelector('#histSaveBtn').onclick = overlay.querySelector('#histSaveBtn').onclick;
+          overlay.querySelector('#histEditBtn').onclick = arguments.callee;
+          overlay.querySelector('#histCloseBtn').onclick = function() { overlay.remove(); };
+        };
+        overlay.querySelector('#histCancelBtn').onclick = function() {
+          bodyEl.innerHTML = originalContent;
+          btnContainer.innerHTML = '<button id="histDownloadBtn" style="background:rgba(255,255,255,.9);border:none;color:#1B5EA7;padding:6px 14px;border-radius:8px;font-size:12px;cursor:pointer;font-weight:600;">⬇ 下载</button><button id="histSaveBtn" style="background:rgba(255,255,255,.9);border:none;color:#1B5EA7;padding:6px 14px;border-radius:8px;font-size:12px;cursor:pointer;font-weight:600;">💾 保存</button><button id="histEditBtn" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:#fff;padding:6px 14px;border-radius:8px;font-size:12px;cursor:pointer;">✏️ 编辑</button><button id="histCloseBtn" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:#fff;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;">关闭</button>';
+          overlay.querySelector('#histDownloadBtn').onclick = overlay.querySelector('#histDownloadBtn').onclick;
+          overlay.querySelector('#histSaveBtn').onclick = overlay.querySelector('#histSaveBtn').onclick;
+          overlay.querySelector('#histEditBtn').onclick = arguments.callee;
+          overlay.querySelector('#histCloseBtn').onclick = function() { overlay.remove(); };
+        };
       };
       overlay.querySelector('#histCloseBtn').onclick = function() { overlay.remove(); };
 
